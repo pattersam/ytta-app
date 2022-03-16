@@ -51,9 +51,7 @@ deploy:
   script:
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
     # using suggestion [here](https://stackoverflow.com/a/54248723) to 'create or update'
-    - kubectl -n ytta-app create deployment ytta-app-server --image=$CONTAINER_TEST_IMAGE --dry-run=client -o yaml
-    - kubectl -n ytta-app create deployment ytta-app-server --image=$CONTAINER_TEST_IMAGE --dry-run=client -o yaml | kubectl apply -f -
-    #  - kubectl -n ytta-app set image deployment ytta-app-server ytta-app=$CONTAINER_TEST_IMAGE  # TODO not needed now, right?
+    - kubectl -n ytta-app create deployment ytta-app-server --image=$CONTAINER_TEST_IMAGE --replicas=1 --port=8080 --dry-run=client -o yaml | kubectl apply -f -
     - kubectl -n ytta-app rollout status deployment ytta-app-server
   only:
     - main
