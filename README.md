@@ -1,6 +1,8 @@
 # YTTA App
 
-YouTube Tag Analyser App
+[![pipeline status](https://gitlab.com/youtube-tag-analyser/ytta-app/badges/main/pipeline.svg)](https://gitlab.com/youtube-tag-analyser/ytta-app/-/commits/main) [![coverage report](https://gitlab.com/youtube-tag-analyser/ytta-app/badges/main/coverage.svg)](https://gitlab.com/youtube-tag-analyser/ytta-app/-/commits/main)
+
+*YouTube Tag Analyser App*
 
 ## Installation
 
