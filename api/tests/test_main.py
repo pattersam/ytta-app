@@ -28,7 +28,8 @@ def test_get_video():
 def test_post_videos():
     response = client.post("/videos/?url=https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DykwyamBDUu8")
     assert response.status_code == 200
-    assert response.json() == {
-        "msg": "Download finished",
-        "fname": "/workspace/ytta-app/downloads/[ykwyamBDUu8] Tired of Being a Bird.mp4"
-        }
+    response_json = response.json()
+    assert response_json["msg"] == "Download finished"
+    assert response_json["fname"].endswith(
+        "ytta-app/downloads/[ykwyamBDUu8] Tired of Being a Bird.mp4"
+        )
