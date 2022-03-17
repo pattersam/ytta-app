@@ -3,8 +3,8 @@ services:
   - docker:19.03.12-dind
 
 stages:
-  - build
   - test
+  - build
   - release
   - deploy
 
@@ -18,17 +18,23 @@ variables:
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
+test:
+  stage: test
+  image: python:3.8
+  script:
+    - pip install -r requirements.txt
+    - pip install -r dev_requirements.txt
+    - pytest api --junitxml=report.xml
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
+
 build:
   stage: build
   script:
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
-
-test:
-  stage: test
-  script:
-    - docker pull $CONTAINER_TEST_IMAGE
-    - echo "TESTING"
 
 release-image:
   stage: release
