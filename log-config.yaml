@@ -3,10 +3,12 @@ disable_existing_loggers: False
 formatters:
   default:
     "()": uvicorn.logging.DefaultFormatter
-    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format: '%(levelprefix)s %(asctime)s | %(name)s - %(message)s'
+    "datefmt": "%Y-%m-%d %H:%M:%S"
   access:
     "()": uvicorn.logging.AccessFormatter
-    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format: '%(levelprefix)s %(asctime)s | %(name)s - %(message)s'
+    "datefmt": "%Y-%m-%d %H:%M:%S"
 handlers:
   default:
     formatter: default
@@ -17,6 +19,10 @@ handlers:
     class: logging.StreamHandler
     stream: ext://sys.stdout
 loggers:
+  uvicorn:
+    level: INFO
+    handlers:
+     - default
   uvicorn.error:
     level: INFO
     handlers:
@@ -27,3 +33,7 @@ loggers:
     handlers:
       - access
     propagate: no
+  app:
+    level: INFO
+    handlers:
+      - default
