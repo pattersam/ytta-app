@@ -33,7 +33,7 @@ loggers:
     handlers:
       - access
     propagate: no
-  app:
+  api:
     level: INFO
     handlers:
       - default
