@@ -25,11 +25,13 @@ test:
   script:
     - pip install -r requirements.txt
     - pip install -r dev_requirements.txt
-    - pytest api --junitxml=report.xml
+    - pytest api/tests --junitxml=report.xml --cov=api
+    - coverage xml
   artifacts:
     when: always
     reports:
       junit: report.xml
+      cobertura: coverage.xml
 
 build:
   stage: build
