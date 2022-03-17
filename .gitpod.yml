@@ -1,6 +1,5 @@
 tasks:
-  - name: install
-    command: |
+  - command: |
       pip install -r requirements.txt
       pip install -r dev_requirements.txt
       gp sync-done install
