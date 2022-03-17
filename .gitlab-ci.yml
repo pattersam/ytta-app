@@ -27,6 +27,7 @@ test:
     - pip install -r dev_requirements.txt
     - pytest api/tests --junitxml=report.xml --cov=api
     - coverage xml
+  coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
     when: always
     reports:
