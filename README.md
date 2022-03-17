@@ -6,6 +6,7 @@ YouTube Tag Analyser App
 
 ```bash
 pip install -r requirements.txt
+pip install -r dev_requirements.txt
 ```
 
 ## Building / running as a container
