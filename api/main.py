@@ -2,7 +2,7 @@ import logging
 
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Query
 from pytube import YouTube
 
 
@@ -13,14 +13,12 @@ description = """
 Build a picture of your YouTube usage 📺
 """
 
-
 tags_metadata = [
     {
         "name": "videos",
         "description": "Operations with videos.",
     },
 ]
-
 
 app = FastAPI(
     title="YouTube Tag Analysis API",
@@ -44,11 +42,16 @@ def get_video(video_id: str):
     return {"msg": f"TO BE IMPLEMENTED {video_id}"}
 
 @app.post("/videos/", tags=["videos"])
-def post_video(url: str):
+def post_video(
+    url: str = Query(
+        ...,
+        description='URL of a YouTube video',
+        example='https://www.youtube.com/watch?v=ykwyamBDUu8'
+        )
+    ):
     logger.info(f"Downloading: {url}")
     yt = YouTube(url)
-    video = yt.streams.filter(only_video=True, file_extension='mp4').first()
-    fname = video.download('downloads/', filename_prefix=f"[{yt.video_id}] ")
+    fname = yt.streams.filter(only_video=True, file_extension='mp4').first().download('downloads/', filename_prefix=f"[{yt.video_id}] ")
     return {
         "msg": "Download finished",
         "fname": fname,
