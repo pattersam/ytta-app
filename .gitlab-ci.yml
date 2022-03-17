@@ -47,7 +47,7 @@ deploy:
      entrypoint: [""]
   environment:
     name: production
-    url: http://34.89.234.37/
+    url: http://k8s-yttaapp-yttaappi-09ca915a8c-1517465418.eu-central-1.elb.amazonaws.com/
   script:
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
     # using suggestion [here](https://stackoverflow.com/a/54248723) to 'create or update'
