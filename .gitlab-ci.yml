@@ -24,7 +24,10 @@ variables:
   POSTGRES_HOST_AUTH_METHOD: trust
   # app variables
   PROJECT_NAME: YouTube Tag Analyser
-
+  SERVER_NAME: 0.0.0.0:8000
+  SERVER_HOST: http://0.0.0.0
+  FIRST_SUPERUSER: example@example.com
+  FIRST_SUPERUSER_PASSWORD: example
 
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -36,7 +39,7 @@ test:
   script:
     - pip install -r requirements.txt
     - pip install -r dev_requirements.txt
-    - pytest --cov=app --cov-report=term-missing --junitxml=report.xml app/tests
+    - ./test
     - coverage xml
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
