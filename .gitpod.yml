@@ -6,7 +6,7 @@ tasks:
   - name: uvicorn
     command: |
       gp sync-await install
-      uvicorn api.main:app --port 8001 --log-config=log-config.yaml --reload
+      uvicorn app.main:app --port 8001 --log-config=log-config.yaml --reload
 
 ports:
   - port: 8001

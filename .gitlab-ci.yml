@@ -25,7 +25,7 @@ test:
   script:
     - pip install -r requirements.txt
     - pip install -r dev_requirements.txt
-    - pytest api/tests --junitxml=report.xml --cov=api
+    - pytest --cov=app --cov-report=term-missing --junitxml=report.xml app/tests
     - coverage xml
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
@@ -60,7 +60,7 @@ deploy:
     url: http://k8s-yttaapp-yttaappi-09ca915a8c-1517465418.eu-central-1.elb.amazonaws.com/
   script:
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
-    # using suggestion [here](https://stackoverflow.com/a/54248723) to 'create or update'
+    # using suggestion [from here](https://stackoverflow.com/a/54248723) to 'create or update'
     - kubectl -n ytta-app create deployment ytta-app-server --image=$CONTAINER_TEST_IMAGE --replicas=1 --port=8000 --dry-run=client -o yaml | kubectl apply -f -
     - kubectl -n ytta-app rollout status deployment ytta-app-server
   only:
