@@ -74,7 +74,6 @@ deploy:
     url: http://k8s-yttaapp-yttaappi-09ca915a8c-1517465418.eu-central-1.elb.amazonaws.com/
   script:
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
-    # using suggestion [from here](https://stackoverflow.com/a/54248723) to 'create or update'
     - kubectl set image deployment ytta-app-server ytta-app=$CONTAINER_TEST_IMAGE
     - kubectl -n ytta-app rollout status deployment ytta-app-server
   only:
