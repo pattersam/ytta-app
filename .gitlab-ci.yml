@@ -39,7 +39,7 @@ test:
   script:
     - pip install -r requirements.txt
     - pip install -r dev_requirements.txt
-    - ./test
+    - ./test.sh
     - coverage xml
   coverage: '/TOTAL.*\s+(\d+%)$/'
   artifacts:
