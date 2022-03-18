@@ -1,2 +1,10 @@
+alembic
+celery
+emails
 fastapi[all]
+passlib[bcrypt]
+python-dotenv
+python-jose[cryptography]
 pytube
+psycopg2
+sqlalchemy
