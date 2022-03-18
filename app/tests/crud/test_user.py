@@ -26,11 +26,20 @@ def test_authenticate_user(db: Session) -> None:
     assert user.email == authenticated_user.email
 
 
-def test_not_authenticate_user(db: Session) -> None:
+def test_authenticate_missing_user(db: Session) -> None:
     email = random_email()
     password = random_lower_string()
     user = crud.user.authenticate(db, email=email, password=password)
     assert user is None
+
+
+def test_authenticate_user_wrong_password(db: Session) -> None:
+    email = random_email()
+    password = random_lower_string()
+    user_in = UserCreate(email=email, password=password)
+    user = crud.user.create(db, obj_in=user_in)
+    authenticated_user = crud.user.authenticate(db, email=email, password=f"{password} with typo")
+    assert authenticated_user is None
 
 
 def test_check_if_user_is_active(db: Session) -> None:
@@ -88,6 +97,19 @@ def test_update_user(db: Session) -> None:
     new_password = random_lower_string()
     user_in_update = UserUpdate(password=new_password, is_superuser=True)
     crud.user.update(db, db_obj=user, obj_in=user_in_update)
+    user_2 = crud.user.get(db, id=user.id)
+    assert user_2
+    assert user.email == user_2.email
+    assert verify_password(new_password, user_2.hashed_password)
+
+
+def test_update_user_from_dict(db: Session) -> None:
+    password = random_lower_string()
+    email = random_email()
+    user_in = UserCreate(email=email, password=password, is_superuser=True)
+    user = crud.user.create(db, obj_in=user_in)
+    new_password = random_lower_string()
+    crud.user.update(db, db_obj=user, obj_in={"password": new_password, "is_superuser": True})
     user_2 = crud.user.get(db, id=user.id)
     assert user_2
     assert user.email == user_2.email

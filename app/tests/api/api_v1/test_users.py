@@ -7,6 +7,7 @@ from app import crud
 from app.core.config import settings
 from app.schemas.user import UserCreate
 from app.tests.utils.utils import random_email, random_lower_string
+from app.tests.utils.user import create_random_user
 
 
 def test_get_users_superuser_me(
@@ -94,6 +95,18 @@ def test_create_user_by_normal_user(
     assert r.status_code == 400
 
 
+def test_create_user_by_random_user(
+    client: TestClient, random_user_token_headers: Dict[str, str]
+) -> None:
+    username = random_email()
+    password = random_lower_string()
+    data = {"email": username, "password": password}
+    r = client.post(
+        f"{settings.API_V1_STR}/users/", headers=random_user_token_headers, json=data,
+    )
+    assert r.status_code == 400
+
+
 def test_retrieve_users(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
@@ -113,3 +126,27 @@ def test_retrieve_users(
     assert len(all_users) > 1
     for item in all_users:
         assert "email" in item
+
+
+def test_update_user(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    user = create_random_user(db)
+    data = {"full_name": "Updated Full Name"}
+    r = client.put(
+        f"{settings.API_V1_STR}/users/{user.id}", headers=superuser_token_headers, json=data,
+    )
+    assert r.status_code == 200
+    updated_user = r.json()
+    assert updated_user
+    assert updated_user["full_name"] == data["full_name"]
+
+
+def test_update_user_that_doesnt_exist(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    data = {"full_name": "Updated Full Name"}
+    r = client.put(
+        f"{settings.API_V1_STR}/users/-1", headers=superuser_token_headers, json=data,
+    )
+    assert r.status_code == 404

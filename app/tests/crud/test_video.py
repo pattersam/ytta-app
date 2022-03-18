@@ -39,6 +39,26 @@ def test_get_video(db: Session) -> None:
     assert video.owner_id == stored_video.owner_id
 
 
+def test_get_multo_video(db: Session) -> None:
+    title = random_lower_string()
+    description = random_lower_string()
+    url = random_lower_string()
+    yt_id = random_lower_string()
+    video_in = VideoCreate(title=title, description=description, url=url, yt_id=yt_id)
+    user = create_random_user(db)
+    video = crud.video.create_with_owner(db=db, obj_in=video_in, owner_id=user.id)
+    stored_videos = crud.video.get_multi_by_owner(db=db, owner_id=user.id, skip=0, limit=100)
+    stored_video = stored_videos[0]
+    assert stored_videos
+    assert len(stored_videos) == 1
+    assert video.id == stored_video.id
+    assert video.title == stored_video.title
+    assert video.description == stored_video.description
+    assert video.url == stored_video.url
+    assert video.yt_id == stored_video.yt_id
+    assert video.owner_id == stored_video.owner_id
+
+
 def test_update_video(db: Session) -> None:
     title = random_lower_string()
     description = random_lower_string()
