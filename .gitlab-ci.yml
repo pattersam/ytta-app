@@ -64,6 +64,7 @@ test:frontend:
       cobertura: coverage/cobertura-coverage.xml
     paths:
       - coverage
+      - node_modules
 
 build:
   stage: build
