@@ -151,3 +151,19 @@ def update_user(
         )
     user = crud.user.update(db, db_obj=user, obj_in=user_in)
     return user
+
+
+@router.get("/{user_id}/videos", response_model=List[schemas.Video])
+def read_videos_by_user_id(
+    user_id: int,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Get a list of videos for a given user id.
+    """
+    if (not user_id == current_user.id) and (not crud.user.is_superuser(current_user)):
+        raise HTTPException(
+            status_code=400, detail="The user doesn't have enough privileges"
+        )
+    return crud.video.get_multi_by_owner(db, owner_id=user_id)
