@@ -55,7 +55,15 @@ test:frontend:
   script:
     - cd frontend
     - npm install
-    - npm run test:unit
+    - npm run ci:unit
+  coverage: '/Lines\s*:\s*(\d+.?\d*)%/'
+  artifacts:
+    when: always
+    reports:
+      junit: junit.xml
+      cobertura: coverage/cobertura-coverage.xml
+    paths:
+      - coverage
 
 build:
   stage: build

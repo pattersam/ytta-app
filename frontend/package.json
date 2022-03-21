@@ -6,6 +6,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "test:unit": "vue-cli-service test:unit",
+    "ci:unit": "vue-cli-service test:unit --coverage --no-color --reporters=default --reporters=jest-junit",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -31,6 +32,7 @@
     "@vue/cli-service": "^4.1.1",
     "@vue/test-utils": "^1.0.0-beta.28",
     "babel-core": "7.0.0-bridge.0",
+    "jest-junit": "^13.0.0",
     "ts-jest": "^23.10.5",
     "typescript": "^3.2.4",
     "vue-cli-plugin-vuetify": "^2.0.2",
@@ -69,6 +71,8 @@
     "testMatch": [
       "**/tests/unit/**/*.spec.(js|jsx|ts|tsx)|**/__tests__/*.(js|jsx|ts|tsx)"
     ],
-    "testURL": "http://localhost/"
+    "testURL": "http://localhost/",
+    "collectCoverageFrom": ["src/**/*.(js|jsx|ts|tsx|vue)", "!**/node_modules/**"],
+    "coverageReporters": ["html", "text", "text-summary", "cobertura"]
   }
 }
