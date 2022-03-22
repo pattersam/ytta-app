@@ -55,10 +55,6 @@ test:frontend:
   script:
     - cd frontend
     - npm install
-    - ls
-    - ls node_modules
-    - npm list
-    - npm list -a
     - npm run ci:unit
     - ls
     - ls coverage
