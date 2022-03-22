@@ -55,6 +55,11 @@ test:frontend:
   script:
     - cd frontend
     - npm install
+    - ls
+    - ls node_modules
+    - npm list
+    - npm list -a
+    - npm list jest
     - npm run ci:unit
   coverage: '/Lines\s*:\s*(\d+.?\d*)%/'
   artifacts:
@@ -63,8 +68,8 @@ test:frontend:
       junit: junit.xml
       cobertura: coverage/cobertura-coverage.xml
     paths:
-      - coverage
-      - node_modules
+      - coverage/
+      - node_modules/
 
 build:
   stage: build
