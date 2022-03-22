@@ -13,7 +13,13 @@ ARG FRONTEND_ENV=production
 
 ENV VUE_APP_ENV=${FRONTEND_ENV}
 
-RUN npm run build
+RUN echo $VUE_APP_ENV
+
+RUN ["echo", "$VUE_APP_ENV"]
+
+RUN ["sh", "-c", "echo $VUE_APP_ENV"]
+
+RUN ["npm", "run", "build"]
 
 
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx
