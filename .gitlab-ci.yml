@@ -32,7 +32,7 @@ variables:
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
-test:
+test:backend:
   stage: test
   image: python:3.8
   before_script: []
@@ -47,6 +47,21 @@ test:
     reports:
       junit: report.xml
       cobertura: coverage.xml
+
+test:frontend:
+  stage: test
+  image: tiangolo/node-frontend:10
+  before_script: []
+  script:
+    - cd frontend
+    - npm install
+    - npm run ci:unit
+  coverage: '/Lines\s*:\s*(\d+.?\d*)%/'
+  artifacts:
+    when: always
+    reports:
+      junit: frontend/junit.xml
+      cobertura: frontend/coverage/cobertura-coverage.xml
 
 build:
   stage: build

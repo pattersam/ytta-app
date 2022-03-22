@@ -2,12 +2,22 @@ tasks:
   - command: |
       pip install -r requirements.txt
       pip install -r dev_requirements.txt
+      cd frontend
+      npm install
       gp sync-done install
   - name: uvicorn
     command: |
       gp sync-await install
       uvicorn app.main:app --port 8001 --log-config=log-config.yaml --reload
+  - name: vue
+    command: |
+      gp sync-await install
+      cd frontend
+      npm run serve
 
 ports:
   - port: 8001
     onOpen: open-preview
+    visibility: public
+  - port: 8080
+    onOpen: open-browser
