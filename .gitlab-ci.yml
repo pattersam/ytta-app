@@ -125,8 +125,8 @@ release:frontend:
     - docker pull $CONTAINER_FRONTEND_TEST_IMAGE
     - docker tag $CONTAINER_FRONTEND_TEST_IMAGE $CONTAINER_FRONTEND_RELEASE_IMAGE
     - docker push $CONTAINER_FRONTEND_RELEASE_IMAGE
-  only:
-    - main
+  # only:
+  #   - main
 
 deploy:frontend:
   stage: deploy
@@ -143,5 +143,5 @@ deploy:frontend:
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
     - kubectl -n ytta-app set image deployment ytta-app-frontend ytta-app=$CONTAINER_FRONTEND_RELEASE_IMAGE
     - kubectl -n ytta-app rollout status deployment ytta-app-frontend
-  only:
-    - main
+  # only:
+  #   - main
