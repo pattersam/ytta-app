@@ -10,13 +10,11 @@ RUN npm install
 COPY ./ /app/
 
 ARG FRONTEND_ENV=production
-
 ENV VUE_APP_ENV=${FRONTEND_ENV}
+ENV VUE_APP_NAME=ytta
+ENV VUE_APP_DOMAIN_PROD=k8s-yttaapp-yttaappi-09ca915a8c-1517465418.eu-central-1.elb.amazonaws.com
 
-# Comment out the next line to disable tests
-RUN npm run test:unit
-
-RUN npm run build
+RUN ["npm", "run", "build"]
 
 
 # Stage 1, based on Nginx, to have only the compiled app, ready for production with Nginx

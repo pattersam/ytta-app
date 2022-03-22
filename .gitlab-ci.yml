@@ -14,23 +14,29 @@ variables:
   # Use TLS https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#tls-enabled
   DOCKER_HOST: tcp://docker:2376
   DOCKER_TLS_CERTDIR: "/certs"
-  CONTAINER_TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-  CONTAINER_RELEASE_IMAGE: $CI_REGISTRY_IMAGE:latest
+  CONTAINER_BACKEND_TEST_IMAGE: $CI_REGISTRY_IMAGE/backend:$CI_COMMIT_SHA
+  CONTAINER_BACKEND_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/backend:latest
+  CONTAINER_FRONTEND_TEST_IMAGE: $CI_REGISTRY_IMAGE/frontend:$CI_COMMIT_SHA
+  CONTAINER_FRONTEND_RELEASE_IMAGE: $CI_REGISTRY_IMAGE/frontend:latest
   # postgres service
   POSTGRES_SERVER: postgres
   POSTGRES_DB: $POSTGRES_DB
   POSTGRES_USER: $POSTGRES_USER
   POSTGRES_PASSWORD: $POSTGRES_PASSWORD
   POSTGRES_HOST_AUTH_METHOD: trust
-  # app variables
+  # backend api variables
   PROJECT_NAME: YouTube Tag Analyser
   SERVER_NAME: 0.0.0.0:8000
   SERVER_HOST: http://0.0.0.0
   FIRST_SUPERUSER: example@example.com
   FIRST_SUPERUSER_PASSWORD: example
+  # frontend ui
+  VUE_APP_NAME: ytta
 
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+# BACKEND API
 
 test:backend:
   stage: test
@@ -49,6 +55,45 @@ test:backend:
       junit: backend/report.xml
       cobertura: backend/coverage.xml
 
+build:backend:
+  stage: build
+  needs: ["test:backend"]
+  script:
+    - cd backend
+    - docker build --pull -t $CONTAINER_BACKEND_TEST_IMAGE .
+    - docker push $CONTAINER_BACKEND_TEST_IMAGE
+
+release:backend:
+  stage: release
+  needs: ["build:backend"]
+  script:
+    - cd backend
+    - docker pull $CONTAINER_BACKEND_TEST_IMAGE
+    - docker tag $CONTAINER_BACKEND_TEST_IMAGE $CONTAINER_BACKEND_RELEASE_IMAGE
+    - docker push $CONTAINER_BACKEND_RELEASE_IMAGE
+  only:
+    - main
+
+deploy:backend:
+  stage: deploy
+  needs: ["release:backend"]
+  before_script: []
+  image:
+     name: bitnami/kubectl:latest
+     entrypoint: [""]
+  environment:
+    name: production-backend
+    url: http://k8s-yttaapp-yttaappi-09ca915a8c-1517465418.eu-central-1.elb.amazonaws.com/
+  script:
+    - cd backend
+    - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
+    - kubectl -n ytta-app set image deployment ytta-app-server ytta-app=$CONTAINER_BACKEND_TEST_IMAGE
+    - kubectl -n ytta-app rollout status deployment ytta-app-server
+  only:
+    - main
+
+# FRONTEND WEB APP
+
 test:frontend:
   stage: test
   image: tiangolo/node-frontend:10
@@ -64,39 +109,39 @@ test:frontend:
       junit: frontend/junit.xml
       cobertura: frontend/coverage/cobertura-coverage.xml
 
-build:backend:
+build:frontend:
   stage: build
-  needs: ["test:backend"]
+  needs: ["test:frontend"]
   script:
-    - cd backend
-    - docker build --pull -t $CONTAINER_TEST_IMAGE .
-    - docker push $CONTAINER_TEST_IMAGE
+    - cd frontend
+    - docker build --pull -t $CONTAINER_FRONTEND_TEST_IMAGE .
+    - docker push $CONTAINER_FRONTEND_TEST_IMAGE
 
-release:backend:
+release:frontend:
   stage: release
-  needs: ["build:backend"]
+  needs: ["build:frontend"]
   script:
-    - cd backend
-    - docker pull $CONTAINER_TEST_IMAGE
-    - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
-    - docker push $CONTAINER_RELEASE_IMAGE
+    - cd frontend
+    - docker pull $CONTAINER_FRONTEND_TEST_IMAGE
+    - docker tag $CONTAINER_FRONTEND_TEST_IMAGE $CONTAINER_FRONTEND_RELEASE_IMAGE
+    - docker push $CONTAINER_FRONTEND_RELEASE_IMAGE
   only:
     - main
 
-deploy:backend:
+deploy:frontend:
   stage: deploy
-  needs: ["release:backend"]
+  needs: ["release:frontend"]
   before_script: []
   image:
      name: bitnami/kubectl:latest
      entrypoint: [""]
   environment:
-    name: production
-    url: http://k8s-yttaapp-yttaappi-09ca915a8c-1517465418.eu-central-1.elb.amazonaws.com/
+    name: production-frontend
+    url: http://k8s-yttaapp-yttaappf-636a1fff84-1865246281.eu-central-1.elb.amazonaws.com/
   script:
-    - cd backend
+    - cd frontend
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
-    - kubectl -n ytta-app set image deployment ytta-app-server ytta-app=$CONTAINER_TEST_IMAGE
-    - kubectl -n ytta-app rollout status deployment ytta-app-server
+    - kubectl -n ytta-app set image deployment ytta-app-frontend ytta-app=$CONTAINER_FRONTEND_TEST_IMAGE
+    - kubectl -n ytta-app rollout status deployment ytta-app-frontend
   only:
     - main
