@@ -1,17 +1,21 @@
 tasks:
-  - command: |
+  - name: installation
+    command: |
+      cd backend
       pip install -r requirements.txt
       pip install -r dev_requirements.txt
-      cd frontend
+      gp sync-done install-backend
+      cd ../frontend
       npm install
-      gp sync-done install
+      gp sync-done install-frontend
   - name: uvicorn
     command: |
-      gp sync-await install
+      gp sync-await install-backend
+      cd backend
       uvicorn app.main:app --port 8001 --log-config=log-config.yaml --reload
   - name: vue
     command: |
-      gp sync-await install
+      gp sync-await install-frontend
       cd frontend
       npm run serve
 
