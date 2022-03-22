@@ -37,6 +37,7 @@ test:backend:
   image: python:3.8
   before_script: []
   script:
+    - cd backend
     - pip install -r requirements.txt
     - pip install -r dev_requirements.txt
     - ./test.sh
@@ -45,8 +46,8 @@ test:backend:
   artifacts:
     when: always
     reports:
-      junit: report.xml
-      cobertura: coverage.xml
+      junit: backend/report.xml
+      cobertura: backend/coverage.xml
 
 test:frontend:
   stage: test
@@ -63,23 +64,28 @@ test:frontend:
       junit: frontend/junit.xml
       cobertura: frontend/coverage/cobertura-coverage.xml
 
-build:
+build:backend:
   stage: build
+  needs: ["test:backend"]
   script:
+    - cd backend
     - docker build --pull -t $CONTAINER_TEST_IMAGE .
     - docker push $CONTAINER_TEST_IMAGE
 
-release-image:
+release:backend:
   stage: release
+  needs: ["build:backend"]
   script:
+    - cd backend
     - docker pull $CONTAINER_TEST_IMAGE
     - docker tag $CONTAINER_TEST_IMAGE $CONTAINER_RELEASE_IMAGE
     - docker push $CONTAINER_RELEASE_IMAGE
   only:
     - main
 
-deploy:
+deploy:backend:
   stage: deploy
+  needs: ["release:backend"]
   before_script: []
   image:
      name: bitnami/kubectl:latest
@@ -88,6 +94,7 @@ deploy:
     name: production
     url: http://k8s-yttaapp-yttaappi-09ca915a8c-1517465418.eu-central-1.elb.amazonaws.com/
   script:
+    - cd backend
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
     - kubectl -n ytta-app set image deployment ytta-app-server ytta-app=$CONTAINER_TEST_IMAGE
     - kubectl -n ytta-app rollout status deployment ytta-app-server
