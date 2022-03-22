@@ -59,7 +59,6 @@ test:frontend:
     - ls node_modules
     - npm list
     - npm list -a
-    - npm list jest
     - npm run ci:unit
     - ls
     - ls coverage
