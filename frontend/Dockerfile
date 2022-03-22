@@ -13,11 +13,13 @@ ARG FRONTEND_ENV=production
 
 ENV VUE_APP_ENV=${FRONTEND_ENV}
 
-RUN echo $VUE_APP_ENV
+ENV VUE_APP_NAME=ytta
 
-RUN ["echo", "$VUE_APP_ENV"]
+RUN echo $VUE_APP_NAME
 
-RUN ["sh", "-c", "echo $VUE_APP_ENV"]
+RUN ["echo", "$VUE_APP_NAME"]
+
+RUN ["sh", "-c", "echo $VUE_APP_NAME"]
 
 RUN ["npm", "run", "build"]
 
