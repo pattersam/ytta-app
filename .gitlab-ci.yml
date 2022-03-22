@@ -24,12 +24,14 @@ variables:
   POSTGRES_USER: $POSTGRES_USER
   POSTGRES_PASSWORD: $POSTGRES_PASSWORD
   POSTGRES_HOST_AUTH_METHOD: trust
-  # app variables
+  # backend api variables
   PROJECT_NAME: YouTube Tag Analyser
   SERVER_NAME: 0.0.0.0:8000
   SERVER_HOST: http://0.0.0.0
   FIRST_SUPERUSER: example@example.com
   FIRST_SUPERUSER_PASSWORD: example
+  # frontend ui
+  VUE_APP_NAME: ytta
 
 before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
