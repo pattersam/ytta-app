@@ -14,13 +14,13 @@ pip install -r dev_requirements.txt
 ### Build
 
 ```bash
-docker build -t app .
+docker build -t backend .
 ```
 
 ### Run
 
 ```bash
-docker run -p 8000:8000 app
+docker run -p 8000:8000 backend
 ```
 
 ### List all containers
