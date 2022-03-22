@@ -56,17 +56,12 @@ test:frontend:
     - cd frontend
     - npm install
     - npm run ci:unit
-    - ls
-    - ls coverage
   coverage: '/Lines\s*:\s*(\d+.?\d*)%/'
   artifacts:
     when: always
     reports:
       junit: frontend/junit.xml
       cobertura: frontend/coverage/cobertura-coverage.xml
-    paths:
-      - frontend/coverage/
-      - frontend/node_modules/
 
 build:
   stage: build
