@@ -137,7 +137,7 @@ deploy:frontend:
      entrypoint: [""]
   environment:
     name: production-frontend
-    url: http://TBA.amazonaws.com/
+    url: http://k8s-yttaapp-yttaappf-636a1fff84-1865246281.eu-central-1.elb.amazonaws.com/
   script:
     - cd frontend
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
