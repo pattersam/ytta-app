@@ -15,4 +15,5 @@ export interface MainState {
     dashboardShowDrawer: boolean;
     notifications: AppNotification[];
     userVideos: IVideo[];
+    newVideo: IVideo | null;
 }
