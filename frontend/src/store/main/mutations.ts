@@ -32,6 +32,9 @@ export const mutations = {
     setUserVideos(state: MainState, payload: IVideo[]) {
         state.userVideos = payload;
     },
+    setNewVideo(state: MainState, payload: IVideo) {
+        state.newVideo = payload;
+    },
 };
 
 const {commit} = getStoreAccessors<MainState | any, State>('');
@@ -45,3 +48,4 @@ export const commitSetUserProfile = commit(mutations.setUserProfile);
 export const commitAddNotification = commit(mutations.addNotification);
 export const commitRemoveNotification = commit(mutations.removeNotification);
 export const commitSetUserVideos = commit(mutations.setUserVideos);
+export const commitSetNewVideo = commit(mutations.setNewVideo);

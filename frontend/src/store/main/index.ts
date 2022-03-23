@@ -12,6 +12,7 @@ const defaultState: MainState = {
   dashboardShowDrawer: true,
   notifications: [],
   userVideos: [],
+  newVideo: null,
 };
 
 export const mainModule = {

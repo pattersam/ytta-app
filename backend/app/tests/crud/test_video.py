@@ -3,32 +3,27 @@ from sqlalchemy.orm import Session
 from app import crud
 from app.schemas.video import VideoCreate, VideoUpdate
 from app.tests.utils.user import create_random_user
+from app.tests.utils.video import get_random_youtube_video_url
 from app.tests.utils.utils import random_lower_string
 
 
 def test_create_video(db: Session) -> None:
-    title = random_lower_string()
-    description = random_lower_string()
-    url = random_lower_string()
-    yt_id = random_lower_string()
-    video_in = VideoCreate(title=title, description=description, url=url, yt_id=yt_id)
+    title = 'I finally got my big break'
+    url = 'https://www.youtube.com/watch?v=Yw_LprMOygw'
+    yt_id = 'Yw_LprMOygw'
+    video_in = VideoCreate(url=url)
     user = create_random_user(db)
     video = crud.video.create_with_owner(db=db, obj_in=video_in, owner_id=user.id)
     assert video.title == title
-    assert video.description == description
     assert video.url == url
     assert video.yt_id == yt_id
     assert video.owner_id == user.id
 
 
 def test_get_video(db: Session) -> None:
-    title = random_lower_string()
-    description = random_lower_string()
-    url = random_lower_string()
-    yt_id = random_lower_string()
-    video_in = VideoCreate(title=title, description=description, url=url, yt_id=yt_id)
+    url = get_random_youtube_video_url()
     user = create_random_user(db)
-    video = crud.video.create_with_owner(db=db, obj_in=video_in, owner_id=user.id)
+    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id)
     stored_video = crud.video.get(db=db, id=video.id)
     assert stored_video
     assert video.id == stored_video.id
@@ -40,13 +35,9 @@ def test_get_video(db: Session) -> None:
 
 
 def test_get_multo_video(db: Session) -> None:
-    title = random_lower_string()
-    description = random_lower_string()
-    url = random_lower_string()
-    yt_id = random_lower_string()
-    video_in = VideoCreate(title=title, description=description, url=url, yt_id=yt_id)
+    url = get_random_youtube_video_url()
     user = create_random_user(db)
-    video = crud.video.create_with_owner(db=db, obj_in=video_in, owner_id=user.id)
+    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id)
     stored_videos = crud.video.get_multi_by_owner(db=db, owner_id=user.id, skip=0, limit=100)
     stored_video = stored_videos[0]
     assert stored_videos
@@ -60,13 +51,9 @@ def test_get_multo_video(db: Session) -> None:
 
 
 def test_update_video(db: Session) -> None:
-    title = random_lower_string()
-    description = random_lower_string()
-    url = random_lower_string()
-    yt_id = random_lower_string()
-    video_in = VideoCreate(title=title, description=description, url=url, yt_id=yt_id)
+    url = get_random_youtube_video_url()
     user = create_random_user(db)
-    video = crud.video.create_with_owner(db=db, obj_in=video_in, owner_id=user.id)
+    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id)
     description2 = random_lower_string()
     video_update = VideoUpdate(description=description2)
     video2 = crud.video.update(db=db, db_obj=video, obj_in=video_update)
@@ -79,17 +66,14 @@ def test_update_video(db: Session) -> None:
 
 
 def test_delete_video(db: Session) -> None:
-    title = random_lower_string()
-    description = random_lower_string()
-    url = random_lower_string()
-    yt_id = random_lower_string()
-    video_in = VideoCreate(title=title, description=description, url=url, yt_id=yt_id)
+    url = get_random_youtube_video_url()
     user = create_random_user(db)
-    video = crud.video.create_with_owner(db=db, obj_in=video_in, owner_id=user.id)
+    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id)
     video2 = crud.video.remove(db=db, id=video.id)
     video3 = crud.video.get(db=db, id=video.id)
     assert video3 is None
     assert video2.id == video.id
-    assert video2.title == title
-    assert video2.description == description
+    assert video2.url == url
+    assert video2.title == video.title
+    assert video2.description == video.description
     assert video2.owner_id == user.id

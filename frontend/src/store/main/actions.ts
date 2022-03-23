@@ -13,6 +13,7 @@ import {
     commitSetToken,
     commitSetUserProfile,
     commitSetUserVideos,
+    commitSetNewVideo,
 } from './mutations';
 import { AppNotification, MainState } from './state';
 
@@ -106,7 +107,7 @@ export const actions = {
         }
     },
     async actionCheckApiError(context: MainContext, payload: AxiosError) {
-        if (payload.response!.status === 401) {
+        if (payload.response && payload.response!.status === 401) {
             await dispatchLogOut(context);
         }
     },
@@ -171,6 +172,21 @@ export const actions = {
             await dispatchCheckApiError(context, error);
         }
     },
+    async actionCreatVideo(context: MainContext, payload: { url: string }) {
+        if (context.rootState.main.userProfile === null) {
+            throw new Error('Something bad happened');
+        }
+        const response = await api.createVideo(context.rootState.main.token, payload.url);
+        if (response) {
+            commitSetNewVideo(context, response.data);
+        }
+    },
+    async actionDeleteVideo(context: MainContext, payload: { id: number }) {
+        if (context.rootState.main.userProfile === null) {
+            throw new Error('Something bad happened');
+        }
+        const response = await api.deleteVideo(context.rootState.main.token, payload.id);
+    },
 };
 
 const { dispatch } = getStoreAccessors<MainState | any, State>('');
@@ -189,3 +205,5 @@ export const dispatchRemoveNotification = dispatch(actions.removeNotification);
 export const dispatchPasswordRecovery = dispatch(actions.passwordRecovery);
 export const dispatchResetPassword = dispatch(actions.resetPassword);
 export const dispatchGetUserVideos = dispatch(actions.actionGetUserVideos);
+export const dispatchCreateVideo = dispatch(actions.actionCreatVideo);
+export const dispatchDeleteVideo = dispatch(actions.actionDeleteVideo);

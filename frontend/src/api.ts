@@ -30,6 +30,12 @@ export const api = {
   async getUserVideos(token: string, userId: number) {
     return axios.get<IVideo[]>(`${apiUrl}/api/v1/users/${userId}/videos`, authHeaders(token));
   },
+  async createVideo(token: string, url: string) {
+    return axios.post(`${apiUrl}/api/v1/videos/`, {url}, authHeaders(token));
+  },
+  async deleteVideo(token: string, id: number) {
+    return axios.delete(`${apiUrl}/api/v1/videos/${id}`, authHeaders(token));
+  },
   async updateUser(token: string, userId: number, data: IUserProfileUpdate) {
     return axios.put(`${apiUrl}/api/v1/users/${userId}`, data, authHeaders(token));
   },

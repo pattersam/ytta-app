@@ -1,6 +1,12 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import (
+    Column,
+    ForeignKey,
+    Integer,
+    String,
+    UniqueConstraint,
+    )
 from sqlalchemy.orm import relationship
 
 from app.db.base_class import Base
@@ -17,3 +23,7 @@ class Video(Base):
     url = Column(String, index=True)
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="videos")
+    
+    __table_args__ = (
+        UniqueConstraint('owner_id', 'yt_id', name='_owner_video_uc'),
+        )
