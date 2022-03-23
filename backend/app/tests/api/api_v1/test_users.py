@@ -11,7 +11,7 @@ from app.tests.utils.user import create_random_user
 
 
 def test_get_users_superuser_me(
-    client: TestClient, superuser_token_headers: Dict[str, str]
+    client: TestClient, superuser_token_headers: Dict[str, str], db: Session
 ) -> None:
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=superuser_token_headers)
     current_user = r.json()
@@ -22,7 +22,7 @@ def test_get_users_superuser_me(
 
 
 def test_get_users_normal_user_me(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
+    client: TestClient, normal_user_token_headers: Dict[str, str], db: Session
 ) -> None:
     r = client.get(f"{settings.API_V1_STR}/users/me", headers=normal_user_token_headers)
     current_user = r.json()
@@ -84,7 +84,7 @@ def test_create_user_existing_username(
 
 
 def test_create_user_by_normal_user(
-    client: TestClient, normal_user_token_headers: Dict[str, str]
+    client: TestClient, normal_user_token_headers: Dict[str, str], db: Session
 ) -> None:
     username = random_email()
     password = random_lower_string()
@@ -96,7 +96,7 @@ def test_create_user_by_normal_user(
 
 
 def test_create_user_by_random_user(
-    client: TestClient, random_user_token_headers: Dict[str, str]
+    client: TestClient, random_user_token_headers: Dict[str, str],  db: Session
 ) -> None:
     username = random_email()
     password = random_lower_string()
