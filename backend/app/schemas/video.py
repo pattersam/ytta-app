@@ -13,9 +13,7 @@ class VideoBase(BaseModel):
 
 # Properties to receive on video creation
 class VideoCreate(VideoBase):
-    title: str
     url: str
-    yt_id: str
 
 
 # Properties to receive on video update
