@@ -102,6 +102,8 @@ export default class CreateVideoCard extends Vue {
             this.newVideoInfo = 'This video has already been added ✌';
           } else if (error.response.status === 406) {
             this.newVideoError = 'Unable to recognise that YouTube video URL 🙁';
+          } else if (error.response.status === 415) {
+            this.newVideoError = 'Unable to find video for that URL 😕';
           } else {
             this.newVideoError = 'Error adding new video 🙁';
           }

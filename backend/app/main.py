@@ -31,6 +31,14 @@ async def pytube_regex_exception_handler(request: Request, exc: pytube.exception
         content={"message": f"Unable to read URL..."},
     )
 
+@app.exception_handler(pytube.exceptions.VideoUnavailable)
+async def pytube_video_unavailable_exception_handler(request: Request, exc: pytube.exceptions.RegexMatchError):
+    logger.error(exc)
+    return JSONResponse(
+        status_code=415,
+        content={"message": f"Video unavailable..."},
+    )
+
 # Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
