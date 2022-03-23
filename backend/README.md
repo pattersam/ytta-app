@@ -9,6 +9,20 @@ pip install -r requirements.txt
 pip install -r dev_requirements.txt
 ```
 
+## Alembic migrations
+
+### Update to latest version
+
+```bash
+alembic upgrade head
+```
+
+### Make a new version
+
+```bash
+alembic revision --autogenerate -m "..."
+```
+
 ## Building / running as a container
 
 ### Build
