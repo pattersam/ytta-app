@@ -4,18 +4,19 @@
       <div class="headline primary--text">Analyse a new video</div>
     </v-card-title>
     <v-card-text>
-      <v-form v-model="valid" ref="new-video">
+      <v-form v-model="valid" ref="form" @submit.prevent>
         <v-text-field
           v-model="newVideoURL"
           placeholder="Enter YouTube Video URL"
           :rules="validateURLRules"
           required
+          @keyup.enter.native="createVideo"
         ></v-text-field>
       </v-form>
     </v-card-text>
     <div v-if="newVideoSuccess">
       <v-alert
-        :value="newVideoSuccess !== ''"
+        v-model="newVideoSuccess"
         transition="fade-transition"
         outline
         dismissible type="success"
@@ -25,7 +26,7 @@
     </div>
     <div v-if="newVideoError">
       <v-alert
-        :value="newVideoError"
+        v-model="newVideoError"
         transition="fade-transition"
         dismissible
         type="error"
@@ -35,7 +36,7 @@
     </div>
     <div v-if="newVideoInfo">
       <v-alert
-        :value="newVideoInfo"
+        v-model="newVideoInfo"
         transition="fade-transition"
         dismissible
         outline
@@ -95,14 +96,13 @@ export default class CreateVideoCard extends Vue {
         })
         .catch((error) => {
           this.newVideoSuccess = '';
+          this.newVideoError = '';
+          this.newVideoInfo = '';
           if (error.response.status === 409) {
-            this.newVideoError = '';
             this.newVideoInfo = 'This video has already been added ✌';
           } else if (error.response.status === 406) {
-            this.newVideoInfo = '';
             this.newVideoError = 'Unable to recognise that YouTube video URL 🙁';
           } else {
-            this.newVideoInfo = '';
             this.newVideoError = 'Error adding new video 🙁';
           }
         });
