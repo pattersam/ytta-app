@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, APIRouter
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 import sqlalchemy.exc
@@ -16,8 +16,9 @@ app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
+index_api_router = APIRouter()
 
-@app.get("/")
+@index_api_router.get("/")
 def index():
     return {"message": "Welcome to the YTTA API 👋"}
 
@@ -54,4 +55,23 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
-app.include_router(api_router, prefix=settings.API_V1_STR)
+async def log_request_info(request: Request):
+    logger.info(
+        f"{request.method} request to {request.url} metadata\n"
+        f"\tHeaders: {request.headers}\n"
+        f"\tBody: {await request.body()}\n"
+        f"\tPath Params: {request.path_params}\n"
+        f"\tQuery Params: {request.query_params}\n"
+        f"\tCookies: {request.cookies}\n"
+    )
+
+app.include_router(
+    api_router,
+    prefix=settings.API_V1_STR,
+    dependencies=[Depends(log_request_info)],
+    )
+
+app.include_router(
+    index_api_router,
+    dependencies=[Depends(log_request_info)],
+    )
