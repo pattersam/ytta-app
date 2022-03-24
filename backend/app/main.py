@@ -16,12 +16,6 @@ app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
 
-index_api_router = APIRouter()
-
-@index_api_router.get("/")
-def index():
-    return {"message": "Welcome to the YTTA API 👋"}
-
 @app.exception_handler(sqlalchemy.exc.IntegrityError)
 async def integrety_error_exception_handler(request: Request, exc: sqlalchemy.exc.IntegrityError):
     logger.error(exc)
@@ -55,6 +49,11 @@ if settings.BACKEND_CORS_ORIGINS:
         allow_headers=["*"],
     )
 
+app.include_router(
+    api_router,
+    prefix=settings.API_V1_STR,
+    )
+
 async def log_request_info(request: Request):
     logger.info(
         f"{request.method} request to {request.url} metadata\n"
@@ -65,11 +64,11 @@ async def log_request_info(request: Request):
         f"\tCookies: {request.cookies}\n"
     )
 
-app.include_router(
-    api_router,
-    prefix=settings.API_V1_STR,
-    dependencies=[Depends(log_request_info)],
-    )
+index_api_router = APIRouter()
+
+@index_api_router.get("/")
+def index():
+    return {"message": "Welcome to the YTTA API 👋"}
 
 app.include_router(
     index_api_router,
