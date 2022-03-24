@@ -11,9 +11,15 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 app = FastAPI(
     title=settings.PROJECT_NAME, openapi_url=f"{settings.API_V1_STR}/openapi.json"
 )
+
+
+@app.get("/")
+def index():
+    return {"message": "Welcome to the YTTA API 👋"}
 
 @app.exception_handler(sqlalchemy.exc.IntegrityError)
 async def integrety_error_exception_handler(request: Request, exc: sqlalchemy.exc.IntegrityError):
@@ -39,7 +45,6 @@ async def pytube_video_unavailable_exception_handler(request: Request, exc: pytu
         content={"message": f"Video unavailable..."},
     )
 
-# Set all CORS enabled origins
 if settings.BACKEND_CORS_ORIGINS:
     app.add_middleware(
         CORSMiddleware,
