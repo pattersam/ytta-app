@@ -2,6 +2,7 @@
     "recommendations": [
         "octref.vetur",
         "ms-python.python",
-        "ckolkman.vscode-postgres"
+        "ckolkman.vscode-postgres",
+        "ms-pyright.pyright"
     ]
 }
