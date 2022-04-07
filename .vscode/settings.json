@@ -1,7 +1,9 @@
 {
+    "python.envFile": "${workspaceFolder}/backend/.env",
     "python.testing.pytestArgs": [
-        "app"
+        "tests"
     ],
+    "python.testing.cwd": "backend/app",
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true
 }

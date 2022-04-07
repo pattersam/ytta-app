@@ -11,10 +11,10 @@ def test_create_video(
     client: TestClient, superuser_token_headers: dict, db: Session
 ) -> None:
     data = {
-        "title": "Tired of Being a Bird?",
-        "description": "Tired of Being a Bird?",
-        "url": "https://www.youtube.com/watch?v=ykwyamBDUu8",
-        "yt_id": "ykwyamBDUu8",
+        "title": "Tired of being a bird?",
+        "description": "Tired of being a bird?\nJust call this number and you will get help!",
+        "url": "https://www.youtube.com/watch?v=LrWGxj43ACA",
+        "yt_id": "LrWGxj43ACA",
         }
     response = client.post(
         f"{settings.API_V1_STR}/videos/", headers=superuser_token_headers, json={"url": data["url"]},
