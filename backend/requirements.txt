@@ -4,6 +4,7 @@ emails
 fastapi
 uvicorn[standard]
 passlib[bcrypt]
+pydantic[email]
 python-dotenv
 python-jose[cryptography]
 pytube
