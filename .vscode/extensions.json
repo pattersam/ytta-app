@@ -1,6 +1,7 @@
 {
     "recommendations": [
         "octref.vetur",
-        "ms-python.python"
+        "ms-python.python",
+        "ckolkman.vscode-postgres"
     ]
 }
