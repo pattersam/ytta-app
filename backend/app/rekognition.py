@@ -7,13 +7,16 @@ Originally sourced from AWS's documentation:
 * [rekognition_objects.py](https://docs.aws.amazon.com/code-samples/latest/catalog/python-rekognition-rekognition_objects.py.html)
 """
 
-import logging
 import json
-from pprint import pprint
+import logging
 import time
+from pprint import pprint
+from typing import Dict
+
 import boto3
-from botocore.exceptions import ClientError
 import requests
+from botocore.exceptions import ClientError
+from pytube import YouTube
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +36,9 @@ class RekognitionLabel:
         self.confidence = label.get('Confidence')
         self.instances = label.get('Instances')
         self.parents = label.get('Parents')
-        self.timestamp = timestamp
+        self.timestamps = []
+        if timestamp is not None:
+            self.timestamps.append(timestamp)
 
     def to_dict(self):
         """
@@ -42,10 +47,11 @@ class RekognitionLabel:
         :return: A dict that contains the label data.
         """
         rendering = {}
-        if self.name is not None:
-            rendering['name'] = self.name
-        if self.timestamp is not None:
-            rendering['timestamp'] = self.timestamp
+        rendering['name'] = self.name
+        if self.confidence is not None:
+            rendering['confidence'] = self.confidence
+        if self.timestamps is not None:
+            rendering['timestamps'] = self.timestamps
         return rendering
 
 
@@ -210,7 +216,11 @@ class RekognitionVideo:
         """
         try:
             response = start_job_func(
-                Video=self.video, NotificationChannel=self.get_notification_channel())
+                Video=self.video,
+                NotificationChannel=self.get_notification_channel(),
+                MinConfidence=50.0,
+
+                )
             job_id = response['JobId']
             logger.info(
                 "Started %s job %s on %s.", job_description, job_id, self.video_name)
@@ -264,7 +274,16 @@ class RekognitionVideo:
             results = []
         return results
 
-    def do_label_detection(self):
+    def label_result_extractor(self, response) -> Dict[str, RekognitionLabel]:
+        labels = {}
+        for label_dict in response['Labels']:
+            name = label_dict['Label'].get('Name')
+            if name not in labels:
+                labels[name] = RekognitionLabel(label_dict['Label'])
+            labels[name].timestamps.append(label_dict['Timestamp'])
+        return labels
+
+    def do_label_detection(self) -> Dict[str, RekognitionLabel]:
         """
         Performs label detection on the video.
 
@@ -274,9 +293,8 @@ class RekognitionVideo:
             "label detection",
             self.rekognition_client.start_label_detection,
             self.rekognition_client.get_label_detection,
-            lambda response: [
-                RekognitionLabel(label['Label'], label['Timestamp']) for label in
-                response['Labels']])
+            self.label_result_extractor,
+            )
 
 
 def usage_demo():
@@ -289,14 +307,17 @@ def usage_demo():
     print("Creating Amazon S3 bucket and uploading video.")
     s3_resource = boto3.resource('s3')
     bucket = s3_resource.create_bucket(
-        Bucket=f'doc-example-bucket-rekognition-{time.time_ns()}',
+        Bucket=f'doc-example-bucket-rekognition-qwertyqwertyqwerty',
         CreateBucketConfiguration={
             'LocationConstraint': s3_resource.meta.client.meta.region_name
         })
-    video_object = bucket.Object('bezos_vogel.mp4')
-    bezos_vogel_video = requests.get(
-        'https://dhei5unw3vrsx.cloudfront.net/videos/bezos_vogel.mp4', stream=True)
-    video_object.upload_fileobj(bezos_vogel_video.raw)
+    # video_object = bucket.Object('bezos_vogel.mp4')
+    # bezos_vogel_video = requests.get('https://dhei5unw3vrsx.cloudfront.net/videos/bezos_vogel.mp4', stream=True)
+    # video_object.upload_fileobj(bezos_vogel_video.raw)
+    yt = YouTube('https://www.youtube.com/watch?v=LrWGxj43ACA')
+    file_name = yt.streams.filter(only_video=True, file_extension='mp4').first().download('./downloads/', filename_prefix=f"[{yt.video_id}] ")
+    video_object = bucket.Object(file_name)
+    video_object.upload_file(file_name)
 
     rekognition_client = boto3.client('rekognition')
     video = RekognitionVideo.from_bucket(video_object, rekognition_client)
@@ -310,9 +331,12 @@ def usage_demo():
 
     print("Detecting labels in the video.")
     labels = video.do_label_detection()
-    print(f"Detected {len(labels)} labels, here are the first twenty:")
-    for label in labels[:20]:
-        pprint(label.to_dict())
+    # print(f"Detected {len(labels)} labels, here are the first twenty:")
+    # for label in labels[:20]:
+    #     pprint(label.to_dict())
+    print(f"Detected {len(labels)} labels:")
+    for label in sorted(labels.values(), key=lambda k: k.name):
+        print(f"{label.name:30s} confidence: {label.confidence:.0f}, occurances: {len(label.timestamps)}")
 
     print("Deleting resources created for the demo.")
     video.delete_notification_channel()
