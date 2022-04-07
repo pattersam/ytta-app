@@ -9,6 +9,7 @@ class VideoBase(BaseModel):
     description: Optional[str] = None
     url: Optional[str] = None
     yt_id: Optional[str] = None
+    status: Optional[str] = None
 
 
 # Properties to receive on video creation

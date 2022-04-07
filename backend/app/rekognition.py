@@ -297,7 +297,54 @@ class RekognitionVideo:
             )
 
 
-def usage_demo():
+def analyse_youtube_video(yt: YouTube) -> str:
+    s3_resource = boto3.resource('s3')
+    rekognition_client = boto3.client('rekognition')
+
+    logger.info("Creating Amazon S3 bucket")
+    bucket = s3_resource.create_bucket(
+        Bucket=f'doc-example-bucket-rekognition-qwertyqwertyqwerty',
+        CreateBucketConfiguration={
+            'LocationConstraint': s3_resource.meta.client.meta.region_name
+        })
+
+    logger.info('Downloading from YouTube')
+    file_name = yt.streams.filter(only_video=True, file_extension='mp4').first().download('./downloads/', filename_prefix=f"[{yt.video_id}] ")
+
+    logger.info('Uploading to AWS S3')
+    video_object = bucket.Object(file_name)
+    video_object.upload_file(file_name)
+
+    logger.info('Setting up RekognitionVideo object')
+    video = RekognitionVideo.from_bucket(video_object, rekognition_client)
+
+    logger.info('Creating notification channel from Amazon Rekognition to Amazon SQS.')
+    iam_resource = boto3.resource('iam')
+    sns_resource = boto3.resource('sns')
+    sqs_resource = boto3.resource('sqs')
+    video.create_notification_channel(
+        'doc-example-video-rekognition',
+        iam_resource,
+        sns_resource,
+        sqs_resource,
+        )
+
+    logger.info('Detecting labels in the video.')
+    labels = video.do_label_detection()
+    logger.info(f"Detected {len(labels)} labels:")
+    for label in sorted(labels.values(), key=lambda k: k.name):
+        logger.info(f"{label.name:30s} confidence: {label.confidence:.0f}, occurances: {len(label.timestamps)}")
+
+    logger.info('Deleting resources created for the demo.')
+    video.delete_notification_channel()
+    bucket.objects.delete()
+    bucket.delete()
+    logger.info(f"Deleted bucket {bucket.name}")
+    logger.info('All resources cleaned up')
+
+    return 'success'
+
+def demo():
     print('-'*88)
     print("Welcome to the Amazon Rekognition video detection demo!")
     print('-'*88)
@@ -348,4 +395,4 @@ def usage_demo():
 
 
 if __name__ == '__main__':
-    usage_demo()
+    demo()

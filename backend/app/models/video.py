@@ -23,6 +23,7 @@ class Video(Base):
     url = Column(String, index=True)
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="videos")
+    status = Column(String)
     
     __table_args__ = (
         UniqueConstraint('owner_id', 'yt_id', name='_owner_video_uc'),

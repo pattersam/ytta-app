@@ -9,6 +9,7 @@
             <td>{{ props.item.title }}</td>
             <td>{{ props.item.description }}</td>
             <td><a :href="props.item.url" target="_blank">{{ props.item.url }}</a></td>
+            <td>{{ props.item.status }}</td>
             <td class="justify-center layout px-0">
               <v-tooltip top>
                 <span>Delete</span>
@@ -49,6 +50,12 @@ export default class VideosTableCard extends Vue {
       text: 'URL',
       sortable: true,
       value: 'url',
+      align: 'left',
+    },
+    {
+      text: 'Status',
+      sortable: true,
+      value: 'status',
       align: 'left',
     },
     {

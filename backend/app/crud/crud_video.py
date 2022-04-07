@@ -9,6 +9,7 @@ from pytube import YouTube
 
 from app.crud.base import CRUDBase
 from app.models.video import Video
+from app.rekognition import analyse_youtube_video
 from app.schemas.video import VideoBase, VideoCreate, VideoUpdate
 
 
@@ -18,14 +19,16 @@ logger = logging.getLogger(__name__)
 
 def create_new_video(url: str) -> VideoBase:
     yt = YouTube(url)
-    # logger.info(f"Downloading: {url}")
-    # yt.streams.filter(only_video=True, file_extension='mp4').first().download('downloads/', filename_prefix=f"[{yt.video_id}] ")
-    return VideoBase(
+    video = VideoBase(
         title=yt.title,
         description=yt.description,
         url=url,
         yt_id=yt.video_id,
+        status='started'
     )
+    result = analyse_youtube_video(yt)
+    video.status = result
+    return video
 
 
 class CRUDVideo(CRUDBase[Video, VideoCreate, VideoUpdate]):
