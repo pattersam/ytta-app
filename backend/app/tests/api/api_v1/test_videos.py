@@ -15,7 +15,7 @@ def test_create_video(
         "description": "Tired of being a bird?\nJust call this number and you will get help!",
         "url": "https://www.youtube.com/watch?v=LrWGxj43ACA",
         "yt_id": "LrWGxj43ACA",
-        "status": "success",
+        "status": "analysis_running",
         }
     response = client.post(
         f"{settings.API_V1_STR}/videos/", headers=superuser_token_headers, json={"url": data["url"]},

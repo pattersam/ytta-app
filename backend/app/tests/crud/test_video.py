@@ -18,7 +18,21 @@ def test_create_video(db: Session) -> None:
     assert video.url == url
     assert video.yt_id == yt_id
     assert video.owner_id == user.id
-    assert video.status == 'success'
+    assert video.status == 'analysis_running'
+
+
+def test_create_video_without_starting_analysis(db: Session) -> None:
+    title = 'I finally got my big break'
+    url = 'https://www.youtube.com/watch?v=Yw_LprMOygw'
+    yt_id = 'Yw_LprMOygw'
+    video_in = VideoCreate(url=url)
+    user = create_random_user(db)
+    video = crud.video.create_with_owner(db=db, obj_in=video_in, owner_id=user.id, run_analysis=False)
+    assert video.title == title
+    assert video.url == url
+    assert video.yt_id == yt_id
+    assert video.owner_id == user.id
+    assert video.status == 'created'
 
 
 def test_get_video(db: Session) -> None:

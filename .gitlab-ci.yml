@@ -46,6 +46,7 @@ test:backend:
     - cd backend
     - pip install -r requirements.txt
     - pip install -r dev_requirements.txt
+    - celery -A app.worker worker -l info -Q ytta-celery &
     - ./test.sh
     - coverage xml
   coverage: '/TOTAL.*\s+(\d+%)$/'

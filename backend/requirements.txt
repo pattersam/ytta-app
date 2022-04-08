@@ -1,6 +1,6 @@
 alembic
 boto3
-celery
+celery[sqs]
 emails
 fastapi
 uvicorn[standard]
