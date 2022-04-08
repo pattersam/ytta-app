@@ -1,5 +1,8 @@
 from celery import Celery
 
+from app.core.config import settings
+
+
 celery_app = Celery(
     "worker",
     broker="sqs://",
@@ -7,7 +10,7 @@ celery_app = Celery(
     broker_transport_options={
         "predefined_queues": {
             "ytta-celery": {
-                "url": "https://sqs.eu-central-1.amazonaws.com/407298002065/ytta-celery",
+                "url": settings.SQS_URL,
             },
         },
     },

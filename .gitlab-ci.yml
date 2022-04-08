@@ -30,6 +30,7 @@ variables:
   SERVER_HOST: http://0.0.0.0
   FIRST_SUPERUSER: example@example.com
   FIRST_SUPERUSER_PASSWORD: example
+  SQS_URL: https://sqs.$AWS_DEFAULT_REGION.amazonaws.com/$AWS_ACCOUNT_ID/ytta-celery
   # frontend ui
   VUE_APP_NAME: ytta
 
