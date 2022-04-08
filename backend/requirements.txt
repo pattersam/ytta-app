@@ -1,5 +1,6 @@
 alembic
-celery
+boto3
+celery[sqs]
 emails
 fastapi
 uvicorn[standard]

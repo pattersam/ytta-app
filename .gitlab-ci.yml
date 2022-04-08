@@ -30,6 +30,7 @@ variables:
   SERVER_HOST: http://0.0.0.0
   FIRST_SUPERUSER: example@example.com
   FIRST_SUPERUSER_PASSWORD: example
+  SQS_URL: https://sqs.$AWS_DEFAULT_REGION.amazonaws.com/$AWS_ACCOUNT_ID/ytta-celery-cicd
   # frontend ui
   VUE_APP_NAME: ytta
 
@@ -46,6 +47,7 @@ test:backend:
     - cd backend
     - pip install -r requirements.txt
     - pip install -r dev_requirements.txt
+    - celery -A app.worker worker -l info -Q ytta-celery &
     - ./test.sh
     - coverage xml
   coverage: '/TOTAL.*\s+(\d+%)$/'

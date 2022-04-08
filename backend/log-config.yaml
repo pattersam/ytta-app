@@ -37,3 +37,4 @@ loggers:
     level: INFO
     handlers:
       - default
+    propagate: no

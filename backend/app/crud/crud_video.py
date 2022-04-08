@@ -8,7 +8,9 @@ from sqlalchemy.orm import Session
 from pytube import YouTube
 
 from app.crud.base import CRUDBase
+from app.core.celery_app import celery_app
 from app.models.video import Video
+from app.rekognition import analyse_youtube_video
 from app.schemas.video import VideoBase, VideoCreate, VideoUpdate
 
 
@@ -18,25 +20,31 @@ logger = logging.getLogger(__name__)
 
 def create_new_video(url: str) -> VideoBase:
     yt = YouTube(url)
-    # logger.info(f"Downloading: {url}")
-    # yt.streams.filter(only_video=True, file_extension='mp4').first().download('downloads/', filename_prefix=f"[{yt.video_id}] ")
-    return VideoBase(
+    video = VideoBase(
         title=yt.title,
         description=yt.description,
         url=url,
         yt_id=yt.video_id,
+        status='created'
     )
+    return video
 
 
 class CRUDVideo(CRUDBase[Video, VideoCreate, VideoUpdate]):
     def create_with_owner(
-        self, db: Session, *, obj_in: VideoCreate, owner_id: int
+        self, db: Session, *, obj_in: VideoCreate, owner_id: int,
+        run_analysis: bool = True
     ) -> Video:
         new_video_data = jsonable_encoder(create_new_video(obj_in.url))
         db_obj = self.model(**new_video_data, owner_id=owner_id)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
+        if run_analysis:
+            celery_app.send_task("app.worker.analyse_video", args=[db_obj.id])
+            db_obj.status = 'analysis_running'
+            db.commit()
+            db.refresh(db_obj)
         return db_obj
 
     def get_multi_by_owner(

@@ -15,6 +15,7 @@ def test_create_video(
         "description": "Tired of being a bird?\nJust call this number and you will get help!",
         "url": "https://www.youtube.com/watch?v=LrWGxj43ACA",
         "yt_id": "LrWGxj43ACA",
+        "status": "analysis_running",
         }
     response = client.post(
         f"{settings.API_V1_STR}/videos/", headers=superuser_token_headers, json={"url": data["url"]},
@@ -23,6 +24,7 @@ def test_create_video(
     content = response.json()
     assert content["title"] == data["title"]
     assert content["description"] == data["description"]
+    assert content["status"] == data["status"]
     assert "id" in content
     assert "owner_id" in content
 
@@ -42,6 +44,7 @@ def test_read_video(
     assert content["yt_id"] == video.yt_id
     assert content["id"] == video.id
     assert content["owner_id"] == video.owner_id
+    assert content["status"] == video.status
 
 
 def test_read_video_that_doesnt_exist(

@@ -9,6 +9,14 @@ pip install -r requirements.txt
 pip install -r dev_requirements.txt
 ```
 
+## Celery
+
+### Start a worker
+
+```bash
+celery -A app.worker worker -l info -Q ytta-celery
+```
+
 ## Alembic migrations
 
 ### Update to latest version
