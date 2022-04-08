@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def run_analysis(video: VideoBase):
+def run_analyse_youtube_video(video: VideoBase):
     yt = YouTube(video.url)
     result = analyse_youtube_video(yt)
     video.status = result
@@ -38,16 +38,18 @@ def create_new_video(url: str) -> VideoBase:
 
 class CRUDVideo(CRUDBase[Video, VideoCreate, VideoUpdate]):
     def create_with_owner(
-        self, db: Session, *, obj_in: VideoCreate, owner_id: int
+        self, db: Session, *, obj_in: VideoCreate, owner_id: int,
+        run_analysis: bool = True
     ) -> Video:
         new_video_data = jsonable_encoder(create_new_video(obj_in.url))
         db_obj = self.model(**new_video_data, owner_id=owner_id)
         db.add(db_obj)
         db.commit()
         db.refresh(db_obj)
-        run_analysis(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        if run_analysis:
+            run_analyse_youtube_video(db_obj)
+            db.commit()
+            db.refresh(db_obj)
         return db_obj
 
     def get_multi_by_owner(

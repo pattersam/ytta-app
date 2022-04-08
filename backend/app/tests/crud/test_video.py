@@ -18,12 +18,13 @@ def test_create_video(db: Session) -> None:
     assert video.url == url
     assert video.yt_id == yt_id
     assert video.owner_id == user.id
+    assert video.status == 'success'
 
 
 def test_get_video(db: Session) -> None:
     url = get_random_youtube_video_url()
     user = create_random_user(db)
-    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id)
+    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id, run_analysis=False)
     stored_video = crud.video.get(db=db, id=video.id)
     assert stored_video
     assert video.id == stored_video.id
@@ -37,7 +38,7 @@ def test_get_video(db: Session) -> None:
 def test_get_multo_video(db: Session) -> None:
     url = get_random_youtube_video_url()
     user = create_random_user(db)
-    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id)
+    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id, run_analysis=False)
     stored_videos = crud.video.get_multi_by_owner(db=db, owner_id=user.id, skip=0, limit=100)
     stored_video = stored_videos[0]
     assert stored_videos
@@ -53,7 +54,7 @@ def test_get_multo_video(db: Session) -> None:
 def test_update_video(db: Session) -> None:
     url = get_random_youtube_video_url()
     user = create_random_user(db)
-    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id)
+    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id, run_analysis=False)
     description2 = random_lower_string()
     video_update = VideoUpdate(description=description2)
     video2 = crud.video.update(db=db, db_obj=video, obj_in=video_update)
@@ -68,7 +69,7 @@ def test_update_video(db: Session) -> None:
 def test_delete_video(db: Session) -> None:
     url = get_random_youtube_video_url()
     user = create_random_user(db)
-    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id)
+    video = crud.video.create_with_owner(db=db, obj_in=VideoCreate(url=url), owner_id=user.id, run_analysis=False)
     video2 = crud.video.remove(db=db, id=video.id)
     video3 = crud.video.get(db=db, id=video.id)
     assert video3 is None
