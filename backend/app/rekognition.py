@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class RekognitionLabel:
     """Encapsulates an Amazon Rekognition label."""
+
     def __init__(self, label, timestamp=None):
         """
         Initializes the label object.
@@ -29,10 +30,10 @@ class RekognitionLabel:
         :param timestamp: The time when the label was detected, if the label
                           was detected in a video.
         """
-        self.name = label.get('Name')
-        self.confidence = label.get('Confidence')
-        self.instances = label.get('Instances')
-        self.parents = label.get('Parents')
+        self.name = label.get("Name")
+        self.confidence = label.get("Confidence")
+        self.instances = label.get("Instances")
+        self.parents = label.get("Parents")
         self.timestamps = []
         if timestamp is not None:
             self.timestamps.append(timestamp)
@@ -44,11 +45,11 @@ class RekognitionLabel:
         :return: A dict that contains the label data.
         """
         rendering = {}
-        rendering['name'] = self.name
+        rendering["name"] = self.name
         if self.confidence is not None:
-            rendering['confidence'] = self.confidence
+            rendering["confidence"] = self.confidence
         if self.timestamps is not None:
-            rendering['timestamps'] = self.timestamps
+            rendering["timestamps"] = self.timestamps
         return rendering
 
 
@@ -57,6 +58,7 @@ class RekognitionVideo:
     Encapsulates an Amazon Rekognition video. This class is a thin wrapper
     around parts of the Boto3 Amazon Rekognition API.
     """
+
     def __init__(self, video, video_name, rekognition_client):
         """
         Initializes the video object.
@@ -82,11 +84,12 @@ class RekognitionVideo:
         :param rekognition_client: A Boto3 Rekognition client.
         :return: The RekognitionVideo object, initialized with Amazon S3 object data.
         """
-        video = {'S3Object': {'Bucket': s3_object.bucket_name, 'Name': s3_object.key}}
+        video = {"S3Object": {"Bucket": s3_object.bucket_name, "Name": s3_object.key}}
         return cls(video, s3_object.key, rekognition_client)
 
     def create_notification_channel(
-            self, resource_name, iam_resource, sns_resource, sqs_resource):
+        self, resource_name, iam_resource, sns_resource, sqs_resource
+    ):
         """
         Creates a notification channel used by Amazon Rekognition to notify subscribers
         that a detection job has completed. The notification channel consists of an
@@ -108,20 +111,33 @@ class RekognitionVideo:
         """
         self.topic = sns_resource.create_topic(Name=resource_name)
         self.queue = sqs_resource.create_queue(
-            QueueName=resource_name, Attributes={'ReceiveMessageWaitTimeSeconds': '5'})
-        queue_arn = self.queue.attributes['QueueArn']
+            QueueName=resource_name, Attributes={"ReceiveMessageWaitTimeSeconds": "5"}
+        )
+        queue_arn = self.queue.attributes["QueueArn"]
 
         # This policy lets the queue receive messages from the topic.
-        self.queue.set_attributes(Attributes={'Policy': json.dumps({
-            'Version': '2008-10-17',
-            'Statement': [{
-                'Sid': 'test-sid',
-                'Effect': 'Allow',
-                'Principal': {'AWS': '*'},
-                'Action': 'SQS:SendMessage',
-                'Resource': queue_arn,
-                'Condition': {'ArnEquals': {'aws:SourceArn': self.topic.arn}}}]})})
-        self.topic.subscribe(Protocol='sqs', Endpoint=queue_arn)
+        self.queue.set_attributes(
+            Attributes={
+                "Policy": json.dumps(
+                    {
+                        "Version": "2008-10-17",
+                        "Statement": [
+                            {
+                                "Sid": "test-sid",
+                                "Effect": "Allow",
+                                "Principal": {"AWS": "*"},
+                                "Action": "SQS:SendMessage",
+                                "Resource": queue_arn,
+                                "Condition": {
+                                    "ArnEquals": {"aws:SourceArn": self.topic.arn}
+                                },
+                            }
+                        ],
+                    }
+                )
+            }
+        )
+        self.topic.subscribe(Protocol="sqs", Endpoint=queue_arn)
 
         # TODO no need to being trying this every time...
         # should be handled by infrastructure management code
@@ -130,34 +146,40 @@ class RekognitionVideo:
             # Name (ARN) is sent each time a job is started.
             self.role = iam_resource.create_role(
                 RoleName=resource_name,
-                AssumeRolePolicyDocument=json.dumps({
-                    'Version': '2012-10-17',
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Principal': {'Service': 'rekognition.amazonaws.com'},
-                            'Action': 'sts:AssumeRole'
-                        }
-                    ]
-                })
+                AssumeRolePolicyDocument=json.dumps(
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Principal": {"Service": "rekognition.amazonaws.com"},
+                                "Action": "sts:AssumeRole",
+                            }
+                        ],
+                    }
+                ),
             )
             policy = iam_resource.create_policy(
                 PolicyName=resource_name,
-                PolicyDocument=json.dumps({
-                    'Version': '2012-10-17',
-                    'Statement': [
-                        {
-                            'Effect': 'Allow',
-                            'Action': 'SNS:Publish',
-                            'Resource': self.topic.arn
-                        }
-                    ]
-                })
+                PolicyDocument=json.dumps(
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Action": "SNS:Publish",
+                                "Resource": self.topic.arn,
+                            }
+                        ],
+                    }
+                ),
             )
             self.role.attach_policy(PolicyArn=policy.arn)
         except ClientError as err:
-            if err.response['Error']['Code'] == 'EntityAlreadyExists':
-                self.role = [r for r in iam_resource.roles.all() if r.name == resource_name][0]
+            if err.response["Error"]["Code"] == "EntityAlreadyExists":
+                self.role = [
+                    r for r in iam_resource.roles.all() if r.name == resource_name
+                ][0]
             else:
                 raise err
 
@@ -167,7 +189,7 @@ class RekognitionVideo:
 
         :return: The notification channel data.
         """
-        return {'RoleArn': self.role.arn, 'SNSTopicArn': self.topic.arn}
+        return {"RoleArn": self.role.arn, "SNSTopicArn": self.topic.arn}
 
     def delete_notification_channel(self):
         """
@@ -197,15 +219,16 @@ class RekognitionVideo:
         job_done = False
         while not job_done:
             messages = self.queue.receive_messages(
-                MaxNumberOfMessages=1, WaitTimeSeconds=5)
+                MaxNumberOfMessages=1, WaitTimeSeconds=5
+            )
             logger.info("Polled queue for messages, got %s.", len(messages))
             if messages:
                 body = json.loads(messages[0].body)
-                message = json.loads(body['Message'])
-                if job_id != message['JobId']:
+                message = json.loads(body["Message"])
+                if job_id != message["JobId"]:
                     continue
-                status = message['Status']
-                logger.info("Got message %s with status %s.", message['JobId'], status)
+                status = message["Status"]
+                logger.info("Got message %s with status %s.", message["JobId"], status)
                 messages[0].delete()
                 job_done = True
         return status
@@ -224,14 +247,15 @@ class RekognitionVideo:
                 Video=self.video,
                 NotificationChannel=self.get_notification_channel(),
                 MinConfidence=50.0,
-
-                )
-            job_id = response['JobId']
+            )
+            job_id = response["JobId"]
             logger.info(
-                "Started %s job %s on %s.", job_description, job_id, self.video_name)
+                "Started %s job %s on %s.", job_description, job_id, self.video_name
+            )
         except ClientError:
             logger.exception(
-                "Couldn't start %s job on %s.", job_description, self.video_name)
+                "Couldn't start %s job on %s.", job_description, self.video_name
+            )
             raise
         else:
             return job_id
@@ -250,7 +274,7 @@ class RekognitionVideo:
         """
         try:
             response = get_results_func(JobId=job_id)
-            logger.info("Job %s has status: %s.", job_id, response['JobStatus'])
+            logger.info("Job %s has status: %s.", job_id, response["JobStatus"])
             results = result_extractor(response)
             logger.info("Found %s items in %s.", len(results), self.video_name)
         except ClientError:
@@ -260,7 +284,8 @@ class RekognitionVideo:
             return results
 
     def _do_rekognition_job(
-            self, job_description, start_job_func, get_results_func, result_extractor):
+        self, job_description, start_job_func, get_results_func, result_extractor
+    ):
         """
         Starts a job, waits for completion, and gets the results.
 
@@ -272,20 +297,21 @@ class RekognitionVideo:
         """
         job_id = self._start_rekognition_job(job_description, start_job_func)
         status = self.poll_notification(job_id)
-        if status == 'SUCCEEDED':
+        if status == "SUCCEEDED":
             results = self._get_rekognition_job_results(
-                job_id, get_results_func, result_extractor)
+                job_id, get_results_func, result_extractor
+            )
         else:
             results = []
         return results
 
     def label_result_extractor(self, response) -> Dict[str, RekognitionLabel]:
         labels = {}
-        for label_dict in response['Labels']:
-            name = label_dict['Label'].get('Name')
+        for label_dict in response["Labels"]:
+            name = label_dict["Label"].get("Name")
             if name not in labels:
-                labels[name] = RekognitionLabel(label_dict['Label'])
-            labels[name].timestamps.append(label_dict['Timestamp'])
+                labels[name] = RekognitionLabel(label_dict["Label"])
+            labels[name].timestamps.append(label_dict["Timestamp"])
         return labels
 
     def do_label_detection(self) -> Dict[str, RekognitionLabel]:
@@ -299,105 +325,59 @@ class RekognitionVideo:
             self.rekognition_client.start_label_detection,
             self.rekognition_client.get_label_detection,
             self.label_result_extractor,
-            )
+        )
 
 
 def analyse_youtube_video(yt: YouTube) -> str:
-    s3_resource = boto3.resource('s3')
-    rekognition_client = boto3.client('rekognition')
+    s3_resource = boto3.resource("s3")
+    rekognition_client = boto3.client("rekognition")
 
-    logger.info('Connecting to S3')
-    bucket_name = 'ytta-bucket-rekognition-9mqytxm19438rmiofqp9x4'
+    logger.info("Connecting to S3")
+    bucket_name = "ytta-bucket-rekognition-9mqytxm19438rmiofqp9x4"
     bucket = s3_resource.Bucket(bucket_name)
     if not bucket.creation_date:
         logger.info("Creating Amazon S3 bucket")
         bucket = s3_resource.create_bucket(
-                Bucket=bucket_name,
-                CreateBucketConfiguration={
-                    'LocationConstraint': s3_resource.meta.client.meta.region_name
-                })
+            Bucket=bucket_name,
+            CreateBucketConfiguration={
+                "LocationConstraint": s3_resource.meta.client.meta.region_name
+            },
+        )
 
-    logger.info('Downloading from YouTube')
-    file_name = yt.streams.filter(only_video=True, file_extension='mp4').first().download('./downloads/', filename_prefix=f"[{yt.video_id}] ")
+    logger.info("Downloading from YouTube")
+    file_name = (
+        yt.streams.filter(only_video=True, file_extension="mp4")
+        .first()
+        .download("./downloads/", filename_prefix=f"[{yt.video_id}] ")
+    )
 
-    logger.info('Uploading to AWS S3')
+    logger.info("Uploading to AWS S3")
     video_object = bucket.Object(file_name)
     video_object.upload_file(file_name)
 
-    logger.info('Setting up RekognitionVideo object')
+    logger.info("Setting up RekognitionVideo object")
     video = RekognitionVideo.from_bucket(video_object, rekognition_client)
 
-    logger.info('Connecting to SNS / SQS channel')
-    iam_resource = boto3.resource('iam')
-    sns_resource = boto3.resource('sns')
-    sqs_resource = boto3.resource('sqs')
+    logger.info("Connecting to SNS / SQS channel")
+    iam_resource = boto3.resource("iam")
+    sns_resource = boto3.resource("sns")
+    sqs_resource = boto3.resource("sqs")
     video.create_notification_channel(
-        'ytta-video-rekognition',
+        "ytta-video-rekognition",
         iam_resource,
         sns_resource,
         sqs_resource,
-        )
+    )
 
-    logger.info('Detecting labels in the video.')
+    logger.info("Detecting labels in the video.")
     labels = video.do_label_detection()
     logger.info(f"Detected {len(labels)} labels:")
     for label in sorted(labels.values(), key=lambda k: k.name):
-        logger.info(f"    {label.name:30s} confidence: {label.confidence:.0f}, occurances: {len(label.timestamps)}")
+        logger.info(
+            f"    {label.name:30s} confidence: {label.confidence:.0f}, occurances: {len(label.timestamps)}"
+        )
 
-    logger.info('Deleting bucket objects')
+    logger.info("Deleting bucket objects")
     bucket.objects.delete()
 
-    return 'success'
-
-def demo():
-    print('-'*88)
-    print("Welcome to the Amazon Rekognition video detection demo!")
-    print('-'*88)
-
-    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
-
-    print("Creating Amazon S3 bucket and uploading video.")
-    s3_resource = boto3.resource('s3')
-    bucket = s3_resource.create_bucket(
-        Bucket=f'ytta-bucket-rekognition-9mqytxm19438rmiofqp9x4',
-        CreateBucketConfiguration={
-            'LocationConstraint': s3_resource.meta.client.meta.region_name
-        })
-    # video_object = bucket.Object('bezos_vogel.mp4')
-    # bezos_vogel_video = requests.get('https://dhei5unw3vrsx.cloudfront.net/videos/bezos_vogel.mp4', stream=True)
-    # video_object.upload_fileobj(bezos_vogel_video.raw)
-    yt = YouTube('https://www.youtube.com/watch?v=LrWGxj43ACA')
-    file_name = yt.streams.filter(only_video=True, file_extension='mp4').first().download('./downloads/', filename_prefix=f"[{yt.video_id}] ")
-    video_object = bucket.Object(file_name)
-    video_object.upload_file(file_name)
-
-    rekognition_client = boto3.client('rekognition')
-    video = RekognitionVideo.from_bucket(video_object, rekognition_client)
-
-    print("Creating notification channel from Amazon Rekognition to Amazon SQS.")
-    iam_resource = boto3.resource('iam')
-    sns_resource = boto3.resource('sns')
-    sqs_resource = boto3.resource('sqs')
-    video.create_notification_channel(
-        'ytta-video-rekognition', iam_resource, sns_resource, sqs_resource)
-
-    print("Detecting labels in the video.")
-    labels = video.do_label_detection()
-    # print(f"Detected {len(labels)} labels, here are the first twenty:")
-    # for label in labels[:20]:
-    #     pprint(label.to_dict())
-    print(f"Detected {len(labels)} labels:")
-    for label in sorted(labels.values(), key=lambda k: k.name):
-        print(f"{label.name:30s} confidence: {label.confidence:.0f}, occurances: {len(label.timestamps)}")
-
-    print("Deleting resources created for the demo.")
-    video.delete_notification_channel()
-    bucket.objects.delete()
-    bucket.delete()
-    logger.info("Deleted bucket %s.", bucket.name)
-    print("All resources cleaned up. Thanks for watching!")
-    print('-'*88)
-
-
-if __name__ == '__main__':
-    demo()
+    return "success"
