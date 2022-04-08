@@ -17,6 +17,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def run_analysis(video: VideoBase):
+    yt = YouTube(video.url)
+    result = analyse_youtube_video(yt)
+    video.status = result
+    return video
+
+
 def create_new_video(url: str) -> VideoBase:
     yt = YouTube(url)
     video = VideoBase(
@@ -26,8 +33,6 @@ def create_new_video(url: str) -> VideoBase:
         yt_id=yt.video_id,
         status='started'
     )
-    result = analyse_youtube_video(yt)
-    video.status = result
     return video
 
 
@@ -38,6 +43,9 @@ class CRUDVideo(CRUDBase[Video, VideoCreate, VideoUpdate]):
         new_video_data = jsonable_encoder(create_new_video(obj_in.url))
         db_obj = self.model(**new_video_data, owner_id=owner_id)
         db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        run_analysis(db_obj)
         db.commit()
         db.refresh(db_obj)
         return db_obj

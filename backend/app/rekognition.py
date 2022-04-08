@@ -9,12 +9,9 @@ Originally sourced from AWS's documentation:
 
 import json
 import logging
-import time
-from pprint import pprint
 from typing import Dict
 
 import boto3
-import requests
 from botocore.exceptions import ClientError
 from pytube import YouTube
 
@@ -57,14 +54,14 @@ class RekognitionLabel:
 
 class RekognitionVideo:
     """
-    Encapsulates an Amazon Rekognition video. This class is a thin wrapper around
-    parts of the Boto3 Amazon Rekognition API.
+    Encapsulates an Amazon Rekognition video. This class is a thin wrapper
+    around parts of the Boto3 Amazon Rekognition API.
     """
     def __init__(self, video, video_name, rekognition_client):
         """
         Initializes the video object.
 
-        :param video: Amazon S3 bucket and object key data where the video is located.
+        :param video: Amazon S3 object key data where the video is located.
         :param video_name: The name of the video.
         :param rekognition_client: A Boto3 Rekognition client.
         """
@@ -126,35 +123,43 @@ class RekognitionVideo:
                 'Condition': {'ArnEquals': {'aws:SourceArn': self.topic.arn}}}]})})
         self.topic.subscribe(Protocol='sqs', Endpoint=queue_arn)
 
-        # This role lets Amazon Rekognition publish to the topic. Its Amazon Resource
-        # Name (ARN) is sent each time a job is started.
-        self.role = iam_resource.create_role(
-            RoleName=resource_name,
-            AssumeRolePolicyDocument=json.dumps({
-                'Version': '2012-10-17',
-                'Statement': [
-                    {
-                        'Effect': 'Allow',
-                        'Principal': {'Service': 'rekognition.amazonaws.com'},
-                        'Action': 'sts:AssumeRole'
-                    }
-                ]
-            })
-        )
-        policy = iam_resource.create_policy(
-            PolicyName=resource_name,
-            PolicyDocument=json.dumps({
-                'Version': '2012-10-17',
-                'Statement': [
-                    {
-                        'Effect': 'Allow',
-                        'Action': 'SNS:Publish',
-                        'Resource': self.topic.arn
-                    }
-                ]
-            })
-        )
-        self.role.attach_policy(PolicyArn=policy.arn)
+        # TODO no need to being trying this every time...
+        # should be handled by infrastructure management code
+        try:
+            # This role lets Amazon Rekognition publish to the topic. Its Amazon
+            # Name (ARN) is sent each time a job is started.
+            self.role = iam_resource.create_role(
+                RoleName=resource_name,
+                AssumeRolePolicyDocument=json.dumps({
+                    'Version': '2012-10-17',
+                    'Statement': [
+                        {
+                            'Effect': 'Allow',
+                            'Principal': {'Service': 'rekognition.amazonaws.com'},
+                            'Action': 'sts:AssumeRole'
+                        }
+                    ]
+                })
+            )
+            policy = iam_resource.create_policy(
+                PolicyName=resource_name,
+                PolicyDocument=json.dumps({
+                    'Version': '2012-10-17',
+                    'Statement': [
+                        {
+                            'Effect': 'Allow',
+                            'Action': 'SNS:Publish',
+                            'Resource': self.topic.arn
+                        }
+                    ]
+                })
+            )
+            self.role.attach_policy(PolicyArn=policy.arn)
+        except ClientError as err:
+            if err.response['Error']['Code'] == 'EntityAlreadyExists':
+                self.role = [r for r in iam_resource.roles.all() if r.name == resource_name][0]
+            else:
+                raise err
 
     def get_notification_channel(self):
         """
@@ -301,12 +306,16 @@ def analyse_youtube_video(yt: YouTube) -> str:
     s3_resource = boto3.resource('s3')
     rekognition_client = boto3.client('rekognition')
 
-    logger.info("Creating Amazon S3 bucket")
-    bucket = s3_resource.create_bucket(
-        Bucket=f'doc-example-bucket-rekognition-qwertyqwertyqwerty',
-        CreateBucketConfiguration={
-            'LocationConstraint': s3_resource.meta.client.meta.region_name
-        })
+    logger.info('Connecting to S3')
+    bucket_name = 'ytta-bucket-rekognition-9mqytxm19438rmiofqp9x4'
+    bucket = s3_resource.Bucket(bucket_name)
+    if not bucket.creation_date:
+        logger.info("Creating Amazon S3 bucket")
+        bucket = s3_resource.create_bucket(
+                Bucket=bucket_name,
+                CreateBucketConfiguration={
+                    'LocationConstraint': s3_resource.meta.client.meta.region_name
+                })
 
     logger.info('Downloading from YouTube')
     file_name = yt.streams.filter(only_video=True, file_extension='mp4').first().download('./downloads/', filename_prefix=f"[{yt.video_id}] ")
@@ -318,12 +327,12 @@ def analyse_youtube_video(yt: YouTube) -> str:
     logger.info('Setting up RekognitionVideo object')
     video = RekognitionVideo.from_bucket(video_object, rekognition_client)
 
-    logger.info('Creating notification channel from Amazon Rekognition to Amazon SQS.')
+    logger.info('Connecting to SNS / SQS channel')
     iam_resource = boto3.resource('iam')
     sns_resource = boto3.resource('sns')
     sqs_resource = boto3.resource('sqs')
     video.create_notification_channel(
-        'doc-example-video-rekognition',
+        'ytta-video-rekognition',
         iam_resource,
         sns_resource,
         sqs_resource,
@@ -333,14 +342,10 @@ def analyse_youtube_video(yt: YouTube) -> str:
     labels = video.do_label_detection()
     logger.info(f"Detected {len(labels)} labels:")
     for label in sorted(labels.values(), key=lambda k: k.name):
-        logger.info(f"{label.name:30s} confidence: {label.confidence:.0f}, occurances: {len(label.timestamps)}")
+        logger.info(f"    {label.name:30s} confidence: {label.confidence:.0f}, occurances: {len(label.timestamps)}")
 
-    logger.info('Deleting resources created for the demo.')
-    video.delete_notification_channel()
+    logger.info('Deleting bucket objects')
     bucket.objects.delete()
-    bucket.delete()
-    logger.info(f"Deleted bucket {bucket.name}")
-    logger.info('All resources cleaned up')
 
     return 'success'
 
@@ -354,7 +359,7 @@ def demo():
     print("Creating Amazon S3 bucket and uploading video.")
     s3_resource = boto3.resource('s3')
     bucket = s3_resource.create_bucket(
-        Bucket=f'doc-example-bucket-rekognition-qwertyqwertyqwerty',
+        Bucket=f'ytta-bucket-rekognition-9mqytxm19438rmiofqp9x4',
         CreateBucketConfiguration={
             'LocationConstraint': s3_resource.meta.client.meta.region_name
         })
@@ -374,7 +379,7 @@ def demo():
     sns_resource = boto3.resource('sns')
     sqs_resource = boto3.resource('sqs')
     video.create_notification_channel(
-        'doc-example-video-rekognition', iam_resource, sns_resource, sqs_resource)
+        'ytta-video-rekognition', iam_resource, sns_resource, sqs_resource)
 
     print("Detecting labels in the video.")
     labels = video.do_label_detection()
