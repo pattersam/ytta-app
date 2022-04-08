@@ -3,6 +3,7 @@
         "octref.vetur",
         "ms-python.python",
         "ckolkman.vscode-postgres",
-        "ms-pyright.pyright"
+        "ms-pyright.pyright",
+        "GitLab.gitlab-workflow"
     ]
 }
