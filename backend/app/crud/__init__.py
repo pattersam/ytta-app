@@ -1,5 +1,7 @@
-from .crud_video import video
-from .crud_user import user
+from .crud_video import video  # noqa: F401
+from .crud_user import user  # noqa: F401
+from .crud_label import label  # noqa: F401
+from .crud_label_occurance import label_occurance  # noqa: F401
 
 # For a new basic set of CRUD operations you could just do
 

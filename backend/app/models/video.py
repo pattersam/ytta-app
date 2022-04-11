@@ -21,10 +21,11 @@ class Video(Base):
     description = Column(String, index=True)
     yt_id = Column(String, index=True)
     url = Column(String, index=True)
+    status = Column(String)
     owner_id = Column(Integer, ForeignKey("user.id"))
     owner = relationship("User", back_populates="videos")
-    status = Column(String)
-    
+    label_occurances = relationship("LabelOccurance", back_populates="video")
+
     __table_args__ = (
         UniqueConstraint('owner_id', 'yt_id', name='_owner_video_uc'),
         )
