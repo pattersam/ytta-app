@@ -91,6 +91,8 @@ deploy:backend:
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
     - kubectl -n ytta-app set image deployment ytta-app-server ytta-app=$CONTAINER_BACKEND_TEST_IMAGE
     - kubectl -n ytta-app rollout status deployment ytta-app-server
+    - kubectl -n ytta-app set image deployment ytta-app-celery-worker ytta-app=$CONTAINER_BACKEND_TEST_IMAGE
+    - kubectl -n ytta-app rollout status deployment ytta-app-celery-worker
   only:
     - main
 
