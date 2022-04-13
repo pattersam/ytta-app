@@ -36,6 +36,10 @@ class LabelOccurance(LabelOccuranceInDBBase):
     pass
 
 
+class LabelOccuranceWithLabelName(LabelOccurance):
+    label_name: str
+
+
 # Properties properties stored in DB
 class LabelOccuranceInDB(LabelOccuranceInDBBase):
     pass

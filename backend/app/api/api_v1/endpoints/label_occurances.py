@@ -13,8 +13,8 @@ from app.core.config import settings
 router = APIRouter()
 
 
-@router.get("/", response_model=List[schemas.Label])
-def read_labels(
+@router.get("/", response_model=List[schemas.LabelOccurance])
+def read_label_occurances(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
     limit: int = 100,

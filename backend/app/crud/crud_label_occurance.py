@@ -1,11 +1,14 @@
+from optparse import Option
 from typing import Any, Dict, Optional, Union, List
 
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 
 from app.core.security import get_password_hash, verify_password
 from app.crud.base import CRUDBase
 from app.models.label_occurance import LabelOccurance
+from app.models.video import Video
+from app.models.label import Label
 from app.schemas.label_occurance import LabelOccuranceCreate, LabelOccuranceUpdate
 
 
@@ -68,6 +71,28 @@ class CRUDLabelOccurance(
             .limit(limit)
             .all()
         )
+
+    def get_multi_by_owner(
+        self, db: Session, *, owner_id: int, skip: int = 0, limit: int = 100, with_label_names: bool = False
+    ) -> List[LabelOccurance]:
+        owners_videos = (
+            db.query(Video)
+            .filter(Video.owner_id == owner_id)
+            .options(load_only("id"))
+            .all()
+        )
+        label_occurances = (
+            db.query(self.model)
+            .filter(LabelOccurance.video_id.in_([v.id for v in owners_videos]))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
+        if with_label_names:
+            for lo in label_occurances:
+                label_name = db.query(Label.name).filter(Label.id == lo.label_id).scalar()
+                lo.label_name = label_name
+        return label_occurances
 
 
 label_occurance = CRUDLabelOccurance(LabelOccurance)
