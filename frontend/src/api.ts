@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosPromise } from 'axios';
 import { apiUrl } from '@/env';
 import { IUserProfile, IUserProfileUpdate, IUserProfileCreate, IVideo, ILabelOccurance } from './interfaces';
 
@@ -8,6 +8,42 @@ function authHeaders(token: string) {
       Authorization: `Bearer ${token}`,
     },
   };
+}
+
+async function _getUserLabelOccurances(
+  token: string,
+  userId: number,
+  cursor: number = 0,
+  limit: number = 1000,
+  data: ILabelOccurance[] = [],
+  ): Promise<ILabelOccurance[]> {
+  return axios.get<ILabelOccurance[]>(
+    `${apiUrl}/api/v1/users/${userId}/label_occurances`,
+    Object.assign(
+      { params: {
+        with_label_names: true,
+        skip: cursor,
+        limit,
+      } },
+      authHeaders(token),
+    ),
+  )
+  .then((response) => {
+    if (response.data.length < 1 ) {
+      return data;
+    }
+    data.push(...response.data);
+    if (response.data.length < limit ) {
+      return data;
+    }
+    return _getUserLabelOccurances(
+      token,
+      userId,
+      cursor = cursor + response.data.length,
+      limit = limit,
+      data = data,
+      );
+});
 }
 
 export const api = {
@@ -37,10 +73,7 @@ export const api = {
     return axios.delete(`${apiUrl}/api/v1/videos/${id}`, authHeaders(token));
   },
   async getUserLabelOccurances(token: string, userId: number) {
-    return axios.get<ILabelOccurance[]>(
-      `${apiUrl}/api/v1/users/${userId}/label_occurances`,
-      Object.assign({ params: { with_label_names: true } }, authHeaders(token)),
-    );
+    return _getUserLabelOccurances(token, userId);
   },
   async updateUser(token: string, userId: number, data: IUserProfileUpdate) {
     return axios.put(`${apiUrl}/api/v1/users/${userId}`, data, authHeaders(token));

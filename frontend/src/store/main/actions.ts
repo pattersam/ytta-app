@@ -198,7 +198,7 @@ export const actions = {
                 context.rootState.main.userProfile.id,
                 );
             if (response) {
-                commitSetUserLabelOccurances(context, response.data);
+                commitSetUserLabelOccurances(context, response);
             }
         } catch (error) {
             await dispatchCheckApiError(context, error);
