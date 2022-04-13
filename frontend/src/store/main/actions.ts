@@ -14,6 +14,7 @@ import {
     commitSetUserProfile,
     commitSetUserVideos,
     commitSetNewVideo,
+    commitSetUserLabelOccurances,
 } from './mutations';
 import { AppNotification, MainState } from './state';
 
@@ -187,6 +188,22 @@ export const actions = {
         }
         const response = await api.deleteVideo(context.rootState.main.token, payload.id);
     },
+    async actionGetUserLabelOccurances(context: MainContext) {
+        try {
+            if (context.rootState.main.userProfile === null) {
+                throw new Error('Something bad happened');
+            }
+            const response = await api.getUserLabelOccurances(
+                context.rootState.main.token,
+                context.rootState.main.userProfile.id,
+                );
+            if (response) {
+                commitSetUserLabelOccurances(context, response.data);
+            }
+        } catch (error) {
+            await dispatchCheckApiError(context, error);
+        }
+    },
 };
 
 const { dispatch } = getStoreAccessors<MainState | any, State>('');
@@ -207,3 +224,4 @@ export const dispatchResetPassword = dispatch(actions.resetPassword);
 export const dispatchGetUserVideos = dispatch(actions.actionGetUserVideos);
 export const dispatchCreateVideo = dispatch(actions.actionCreatVideo);
 export const dispatchDeleteVideo = dispatch(actions.actionDeleteVideo);
+export const dispatchGetUserLabelOccurances = dispatch(actions.actionGetUserLabelOccurances);

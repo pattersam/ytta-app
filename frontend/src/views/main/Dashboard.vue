@@ -5,20 +5,23 @@
     </div>
     <CreateVideoCard />
     <VideosTableCard />
+    <LabelOccurancesTableCard />
   </v-container>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import VideosTableCard from '@/components/VideosTableCard.vue';
 import CreateVideoCard from '@/components/CreateVideoCard.vue';
+import VideosTableCard from '@/components/VideosTableCard.vue';
+import LabelOccurancesTableCard from '@/components/LabelOccurancesTableCard.vue';
 import { Store } from 'vuex';
 import { readUserProfile } from '@/store/main/getters';
 
 @Component({
   components: {
-    VideosTableCard,
     CreateVideoCard,
+    VideosTableCard,
+    LabelOccurancesTableCard,
   },
 })
 export default class Dashboard extends Vue {

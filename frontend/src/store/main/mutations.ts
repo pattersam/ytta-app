@@ -1,4 +1,4 @@
-import { IUserProfile, IVideo } from '@/interfaces';
+import { ILabelOccurance, IUserProfile, IVideo } from '@/interfaces';
 import { MainState, AppNotification } from './state';
 import { getStoreAccessors } from 'typesafe-vuex';
 import { State } from '../state';
@@ -35,6 +35,9 @@ export const mutations = {
     setNewVideo(state: MainState, payload: IVideo) {
         state.newVideo = payload;
     },
+    setUserLabelOccurances(state: MainState, payload: ILabelOccurance[]) {
+        state.userLabelOccurances = payload;
+    },
 };
 
 const {commit} = getStoreAccessors<MainState | any, State>('');
@@ -49,3 +52,5 @@ export const commitAddNotification = commit(mutations.addNotification);
 export const commitRemoveNotification = commit(mutations.removeNotification);
 export const commitSetUserVideos = commit(mutations.setUserVideos);
 export const commitSetNewVideo = commit(mutations.setNewVideo);
+export const commitSetUserLabelOccurances = commit(mutations.setUserLabelOccurances);
+

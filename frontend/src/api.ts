@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { apiUrl } from '@/env';
-import { IUserProfile, IUserProfileUpdate, IUserProfileCreate, IVideo } from './interfaces';
+import { IUserProfile, IUserProfileUpdate, IUserProfileCreate, IVideo, ILabelOccurance } from './interfaces';
 
 function authHeaders(token: string) {
   return {
@@ -35,6 +35,12 @@ export const api = {
   },
   async deleteVideo(token: string, id: number) {
     return axios.delete(`${apiUrl}/api/v1/videos/${id}`, authHeaders(token));
+  },
+  async getUserLabelOccurances(token: string, userId: number) {
+    return axios.get<ILabelOccurance[]>(
+      `${apiUrl}/api/v1/users/${userId}/label_occurances`,
+      Object.assign({ params: { with_label_names: true } }, authHeaders(token)),
+    );
   },
   async updateUser(token: string, userId: number, data: IUserProfileUpdate) {
     return axios.put(`${apiUrl}/api/v1/users/${userId}`, data, authHeaders(token));
