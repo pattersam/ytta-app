@@ -9,11 +9,17 @@ Originally sourced from AWS's documentation:
 
 import json
 import logging
+import statistics
 from typing import Dict
 
 import boto3
 from botocore.exceptions import ClientError
 from pytube import YouTube
+from sqlalchemy.orm import Session
+
+from app import crud
+from app.schemas.label import LabelCreate
+from app.schemas.label_occurance import LabelOccuranceCreate
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +27,7 @@ logger = logging.getLogger(__name__)
 class RekognitionLabel:
     """Encapsulates an Amazon Rekognition label."""
 
-    def __init__(self, label, timestamp=None):
+    def __init__(self, label: Dict, timestamp=None):
         """
         Initializes the label object.
 
@@ -31,9 +37,11 @@ class RekognitionLabel:
                           was detected in a video.
         """
         self.name = label.get("Name")
-        self.confidence = label.get("Confidence")
         self.instances = label.get("Instances")
         self.parents = label.get("Parents")
+        self.confidences = []
+        if "Confidence" in label:
+            self.confidences.append(label["Confidence"])
         self.timestamps = []
         if timestamp is not None:
             self.timestamps.append(timestamp)
@@ -312,6 +320,7 @@ class RekognitionVideo:
             if name not in labels:
                 labels[name] = RekognitionLabel(label_dict["Label"])
             labels[name].timestamps.append(label_dict["Timestamp"])
+            labels[name].confidences.append(label_dict["Label"]["Confidence"])
         return labels
 
     def do_label_detection(self) -> Dict[str, RekognitionLabel]:
@@ -328,7 +337,7 @@ class RekognitionVideo:
         )
 
 
-def analyse_youtube_video(yt: YouTube) -> str:
+def analyse_youtube_video(yt: YouTube, video_id: int, db: Session) -> str:
     s3_resource = boto3.resource("s3")
     rekognition_client = boto3.client("rekognition")
 
@@ -370,11 +379,23 @@ def analyse_youtube_video(yt: YouTube) -> str:
     )
 
     logger.info("Detecting labels in the video.")
-    labels = video.do_label_detection()
-    logger.info(f"Detected {len(labels)} labels:")
-    for label in sorted(labels.values(), key=lambda k: k.name):
-        logger.info(
-            f"    {label.name:30s} confidence: {label.confidence:.0f}, occurances: {len(label.timestamps)}"
+    detected_labels = video.do_label_detection()
+    logger.info(f"Detected {len(detected_labels)} label occurances. Saving them to the db.")
+    for dl in sorted(detected_labels.values(), key=lambda k: k.name):
+        num_occurances = len(dl.timestamps)
+        avg_confidence = statistics.mean(dl.confidences)
+        logger.debug(
+            f"    Creating {dl.name:30s} avg_confidence={avg_confidence:.0f}, num_occurances={num_occurances}"
+        )
+        label = crud.label.get_or_create_by_name(db, name=dl.name)
+        crud.label_occurance.create(
+            db,
+            obj_in=LabelOccuranceCreate(
+                num_occurances=num_occurances,
+                avg_confidence=avg_confidence,
+            ),
+            video_id=video_id,
+            label_id=label.id
         )
 
     logger.info("Deleting bucket objects")

@@ -1,5 +1,7 @@
+from cProfile import label
 from typing import Dict
 
+from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -8,6 +10,9 @@ from app.core.config import settings
 from app.schemas.user import UserCreate
 from app.tests.utils.utils import random_email, random_lower_string
 from app.tests.utils.user import create_random_user
+from app.tests.utils.video import create_random_video
+from app.tests.utils.label import create_random_label
+from app.tests.utils.label_occurance import create_random_label_occurance
 
 
 def test_get_users_superuser_me(
@@ -150,3 +155,54 @@ def test_update_user_that_doesnt_exist(
         f"{settings.API_V1_STR}/users/-1", headers=superuser_token_headers, json=data,
     )
     assert r.status_code == 404
+
+
+def test_get_users_videos(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    user = create_random_user(db)
+    video = create_random_video(db, owner_id=user.id)
+    r = client.get(
+        f"{settings.API_V1_STR}/users/{user.id}/videos", headers=superuser_token_headers,
+    )
+    assert 200 == r.status_code
+    videos = r.json()
+    assert len(videos) == 1
+    assert jsonable_encoder(videos) == jsonable_encoder([video])
+
+
+def test_get_users_label_occurances(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    user = create_random_user(db)
+    video = create_random_video(db, owner_id=user.id)
+    lo1 = jsonable_encoder(create_random_label_occurance(db, video_id=video.id))
+    lo2 = jsonable_encoder(create_random_label_occurance(db, video_id=video.id))
+    r = client.get(
+        f"{settings.API_V1_STR}/users/{user.id}/label_occurances", headers=superuser_token_headers,
+    )
+    assert 200 == r.status_code
+    label_occurances = r.json()
+    assert len(label_occurances) == 2
+    assert jsonable_encoder(label_occurances) == [lo1, lo2]
+
+
+def test_get_users_label_occurances_with_label_name(
+    client: TestClient, superuser_token_headers: dict, db: Session
+) -> None:
+    user = create_random_user(db)
+    video = create_random_video(db, owner_id=user.id)
+    label1 = create_random_label(db)
+    label2 = create_random_label(db)
+    create_random_label_occurance(db, label_id=label1.id, video_id=video.id)
+    create_random_label_occurance(db, label_id=label2.id, video_id=video.id)
+    r = client.get(
+        f"{settings.API_V1_STR}/users/{user.id}/label_occurances",
+        headers=superuser_token_headers,
+        params={"with_label_names": True},
+    )
+    assert 200 == r.status_code
+    label_occurances = r.json()
+    print(label_occurances)
+    assert len(label_occurances) == 2
+    assert {l["label_name"] for l in label_occurances} == {label1.name, label2.name}

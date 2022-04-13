@@ -33,7 +33,7 @@ def analyse_video(video_id: int, test_db: Optional[Session] = None) -> str:
             raise ValueError(f"Cannot find video: {video_id}")
         logger.info(f"Analysing {video_id}. Starting status is {video.status}")
         yt = YouTube(video.url)
-        result = analyse_youtube_video(yt)
+        result = analyse_youtube_video(yt, video_id, db)
         logger.info(f"Analyse of {video_id} complete. Resulting status is {result}")
         video.status = result
         db.commit()

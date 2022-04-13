@@ -1,4 +1,4 @@
-import { IUserProfile, IVideo } from '@/interfaces';
+import { IUserProfile, IVideo, ILabelOccurance } from '@/interfaces';
 
 export interface AppNotification {
     content: string;
@@ -15,5 +15,6 @@ export interface MainState {
     dashboardShowDrawer: boolean;
     notifications: AppNotification[];
     userVideos: IVideo[];
+    userLabelOccurances: ILabelOccurance[];
     newVideo: IVideo | null;
 }

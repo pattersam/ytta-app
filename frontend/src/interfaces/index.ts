@@ -29,3 +29,10 @@ export interface IVideo {
     status?: string;
     id: number;
 }
+
+export interface ILabelOccurance {
+    label_name: string;
+    num_videos: number;
+    num_occurances: number;
+    avg_confidence: number;
+}

@@ -13,6 +13,7 @@ const defaultState: MainState = {
   notifications: [],
   userVideos: [],
   newVideo: null,
+  userLabelOccurances: [],
 };
 
 export const mainModule = {

@@ -13,6 +13,12 @@ tasks:
       gp sync-await install-backend
       cd backend
       uvicorn app.main:app --port 8001 --log-config=log-config.yaml --reload
+  - name: celery worker
+    command: |
+      gp sync-await install-backend
+      cd backend
+      celery -A app.worker worker -l info -Q ytta-celery
+    openMode: split-right
   - name: vue
     command: |
       gp sync-await install-frontend

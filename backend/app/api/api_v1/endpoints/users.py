@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any, List, Union
 
 from fastapi import APIRouter, Body, Depends, HTTPException
 from fastapi.encoders import jsonable_encoder
@@ -156,6 +156,8 @@ def update_user(
 @router.get("/{user_id}/videos", response_model=List[schemas.Video])
 def read_videos_by_user_id(
     user_id: int,
+    skip: int = 0,
+    limit: int = 100,
     current_user: models.User = Depends(deps.get_current_active_user),
     db: Session = Depends(deps.get_db),
 ) -> Any:
@@ -166,4 +168,23 @@ def read_videos_by_user_id(
         raise HTTPException(
             status_code=400, detail="The user doesn't have enough privileges"
         )
-    return crud.video.get_multi_by_owner(db, owner_id=user_id)
+    return crud.video.get_multi_by_owner(db, owner_id=user_id, skip=skip, limit=limit)
+
+
+@router.get("/{user_id}/label_occurances", response_model=List[Union[schemas.LabelOccuranceWithLabelName, schemas.LabelOccurance]])
+def read_label_occurances_by_user_id(
+    user_id: int,
+    skip: int = 0,
+    limit: int = 100,
+    with_label_names: bool = False,
+    current_user: models.User = Depends(deps.get_current_active_user),
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Get a list of label occurances for a given user id.
+    """
+    if (not user_id == current_user.id) and (not crud.user.is_superuser(current_user)):
+        raise HTTPException(
+            status_code=400, detail="The user doesn't have enough privileges"
+        )
+    return crud.label_occurance.get_multi_by_owner(db, owner_id=user_id, with_label_names=with_label_names, skip=skip, limit=limit)

@@ -1,4 +1,4 @@
-import { IUserProfile, IVideo } from '@/interfaces';
+import { ILabelOccurance, IUserProfile, IVideo } from '@/interfaces';
 import { MainState, AppNotification } from './state';
 import { getStoreAccessors } from 'typesafe-vuex';
 import { State } from '../state';
@@ -35,6 +35,26 @@ export const mutations = {
     setNewVideo(state: MainState, payload: IVideo) {
         state.newVideo = payload;
     },
+    setUserLabelOccurances(state: MainState, payload: ILabelOccurance[]) {
+        const labelOccurances: {[name: string]: ILabelOccurance } = {};
+        for (const lo of payload) {
+            const name = lo.label_name;
+            if (!(name in labelOccurances)) {
+                labelOccurances[name] = lo;
+                labelOccurances[name].num_videos = 0;
+            } else {
+                labelOccurances[name].avg_confidence = (
+                    (
+                        labelOccurances[name].avg_confidence * labelOccurances[name].num_occurances
+                      + lo.avg_confidence * lo.num_occurances
+                    ) / (labelOccurances[name].num_occurances + lo.num_occurances)
+                    );
+                labelOccurances[name].num_occurances += lo.num_occurances;
+            }
+            labelOccurances[name].num_videos++;
+            }
+        state.userLabelOccurances = Object.values(labelOccurances);
+    },
 };
 
 const {commit} = getStoreAccessors<MainState | any, State>('');
@@ -49,3 +69,5 @@ export const commitAddNotification = commit(mutations.addNotification);
 export const commitRemoveNotification = commit(mutations.removeNotification);
 export const commitSetUserVideos = commit(mutations.setUserVideos);
 export const commitSetNewVideo = commit(mutations.setNewVideo);
+export const commitSetUserLabelOccurances = commit(mutations.setUserLabelOccurances);
+
