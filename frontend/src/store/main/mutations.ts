@@ -36,7 +36,24 @@ export const mutations = {
         state.newVideo = payload;
     },
     setUserLabelOccurances(state: MainState, payload: ILabelOccurance[]) {
-        state.userLabelOccurances = payload;
+        const labelOccurances: {[name: string]: ILabelOccurance } = {};
+        for (const lo of payload) {
+            const name = lo.label_name;
+            if (!(name in labelOccurances)) {
+                labelOccurances[name] = lo;
+                labelOccurances[name].num_videos = 0;
+            } else {
+                labelOccurances[name].avg_confidence = (
+                    (
+                        labelOccurances[name].avg_confidence * labelOccurances[name].num_occurances
+                      + lo.avg_confidence * lo.num_occurances
+                    ) / (labelOccurances[name].num_occurances + lo.num_occurances)
+                    );
+                labelOccurances[name].num_occurances += lo.num_occurances;
+            }
+            labelOccurances[name].num_videos++;
+            }
+        state.userLabelOccurances = Object.values(labelOccurances);
     },
 };
 

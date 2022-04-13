@@ -7,6 +7,7 @@
         <v-data-table :headers="headers" :items="label_occurances" :pagination.sync="paginationOptions">
           <template slot="items" slot-scope="props">
             <td>{{ props.item.label_name }}</td>
+            <td class="text-lg-right">{{ props.item.num_videos }}</td>
             <td class="text-lg-right">{{ props.item.num_occurances }}</td>
             <td class="text-lg-right">{{ parseFloat(props.item.avg_confidence).toFixed(0) }} %</td>
           </template>
@@ -31,7 +32,13 @@ export default class LabelOccurancesTableCard extends Vue {
       align: 'left',
     },
     {
-      text: 'Number of Occurances',
+      text: '# Videos',
+      sortable: true,
+      value: 'num_videos',
+      align: 'right',
+    },
+    {
+      text: '# Occurances',
       sortable: true,
       value: 'num_occurances',
       align: 'right',
@@ -45,7 +52,7 @@ export default class LabelOccurancesTableCard extends Vue {
   ];
   public paginationOptions = {
     descending: true,
-    sortBy: 'num_occurances',
+    sortBy: 'num_videos',
   };
 
   get label_occurances() {

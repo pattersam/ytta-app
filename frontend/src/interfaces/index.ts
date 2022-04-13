@@ -32,6 +32,7 @@ export interface IVideo {
 
 export interface ILabelOccurance {
     label_name: string;
-    num_occurnaces: number;
+    num_videos: number;
+    num_occurances: number;
     avg_confidence: number;
 }
