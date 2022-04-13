@@ -380,11 +380,11 @@ def analyse_youtube_video(yt: YouTube, video_id: int, db: Session) -> str:
 
     logger.info("Detecting labels in the video.")
     detected_labels = video.do_label_detection()
-    logger.info(f"Detected {len(detected_labels)} label occurances:")
+    logger.info(f"Detected {len(detected_labels)} label occurances. Saving them to the db.")
     for dl in sorted(detected_labels.values(), key=lambda k: k.name):
         num_occurances = len(dl.timestamps)
         avg_confidence = statistics.mean(dl.confidences)
-        logger.info(
+        logger.debug(
             f"    Creating {dl.name:30s} avg_confidence={avg_confidence:.0f}, num_occurances={num_occurances}"
         )
         label = crud.label.get_or_create_by_name(db, name=dl.name)
