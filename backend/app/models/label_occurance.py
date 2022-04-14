@@ -19,9 +19,9 @@ class LabelOccurance(Base):
     id = Column(Integer, primary_key=True, index=True)
     num_occurances = Column(Integer)
     avg_confidence = Column(Float)
-    label_id = Column(Integer, ForeignKey("label.id"), nullable=False)
+    label_id = Column(Integer, ForeignKey("label.id"))
     label = relationship("Label", back_populates="occurances")
-    video_id = Column(Integer, ForeignKey("video.id"), nullable=False)
+    video_id = Column(Integer, ForeignKey("video.id"))
     video = relationship("Video", back_populates="label_occurances")
 
     __table_args__ = (UniqueConstraint("video_id", "label_id", name="_video_label_uc"),)
