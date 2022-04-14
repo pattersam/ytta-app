@@ -85,14 +85,14 @@ deploy:backend:
      entrypoint: [""]
   environment:
     name: production-backend
-    url: http://k8s-yttaapp-yttaappi-09ca915a8c-1517465418.eu-central-1.elb.amazonaws.com/
+    url: http://k8s-yttaprod-api-4194ecca69-1622719095.eu-central-1.elb.amazonaws.com/docs
   script:
     - cd backend
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
-    - kubectl -n ytta-app set image deployment ytta-app-server ytta-app=$CONTAINER_BACKEND_TEST_IMAGE
-    - kubectl -n ytta-app rollout status deployment ytta-app-server
-    - kubectl -n ytta-app set image deployment ytta-app-celery-worker ytta-app=$CONTAINER_BACKEND_TEST_IMAGE
-    - kubectl -n ytta-app rollout status deployment ytta-app-celery-worker
+    - kubectl -n ytta-prod set image deployment api ytta-app=$CONTAINER_BACKEND_TEST_IMAGE
+    - kubectl -n ytta-prod set image deployment celery-worker ytta-app=$CONTAINER_BACKEND_TEST_IMAGE
+    - kubectl -n ytta-prod rollout status deployment api
+    - kubectl -n ytta-prod rollout status deployment celery-worker
   only:
     - main
 
@@ -141,11 +141,11 @@ deploy:frontend:
      entrypoint: [""]
   environment:
     name: production-frontend
-    url: http://k8s-yttaapp-yttaappf-636a1fff84-1865246281.eu-central-1.elb.amazonaws.com/
+    url: http://k8s-yttaprod-ui-c90274f218-1861660544.eu-central-1.elb.amazonaws.com/
   script:
     - cd frontend
     - kubectl config use-context youtube-tag-analyser/infrastructure-management:my-agent
-    - kubectl -n ytta-app set image deployment ytta-app-frontend ytta-app=$CONTAINER_FRONTEND_TEST_IMAGE
-    - kubectl -n ytta-app rollout status deployment ytta-app-frontend
+    - kubectl -n ytta-prod set image deployment ui ytta-app=$CONTAINER_FRONTEND_TEST_IMAGE
+    - kubectl -n ytta-prod rollout status deployment ui
   only:
     - main
