@@ -20,6 +20,9 @@ export const getters = {
     userLabelOccuranceGraphNodes: (state: MainState) => {
         const nodes: Array<{}> = [];
         for (const lo of state.userLabelOccurances) {
+            if (lo.num_occurances < 5) {
+                continue;
+            }
             nodes.push({id: lo.label_name, name: lo.label_name, _size: lo.num_occurances});
         }
         return nodes;
@@ -29,7 +32,13 @@ export const getters = {
         const links: Array<{}> = [];
         let vids: number[];
         for (const slo of state.userLabelOccurances) {
+            if (slo.num_occurances < 5) {
+                continue;
+            }
             for (const tlo of state.userLabelOccurances) {
+                if (tlo.num_occurances < 5) {
+                    continue;
+                }
                 if (slo.label_name === tlo.label_name) {
                     continue;
                 }
