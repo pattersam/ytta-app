@@ -35,4 +35,6 @@ export interface ILabelOccurance {
     num_videos: number;
     num_occurances: number;
     avg_confidence: number;
+    video_id: number;
+    video_ids?: number[];
 }

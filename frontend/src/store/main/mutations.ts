@@ -42,6 +42,7 @@ export const mutations = {
             if (!(name in labelOccurances)) {
                 labelOccurances[name] = lo;
                 labelOccurances[name].num_videos = 0;
+                labelOccurances[name].video_ids = [lo.video_id];
             } else {
                 labelOccurances[name].avg_confidence = (
                     (
@@ -50,9 +51,10 @@ export const mutations = {
                     ) / (labelOccurances[name].num_occurances + lo.num_occurances)
                     );
                 labelOccurances[name].num_occurances += lo.num_occurances;
+                labelOccurances[name].video_ids?.push(lo.video_id);
             }
             labelOccurances[name].num_videos++;
-            }
+        }
         state.userLabelOccurances = Object.values(labelOccurances);
     },
 };
