@@ -13,7 +13,7 @@ COPY ./log-config.yaml /code/log-config.yaml
 ENV PROJECT_NAME="YouTube Tag Analyser"
 ENV SERVER_NAME=0.0.0.0:8000
 ENV SERVER_HOST=http://0.0.0.0
-ENV BACKEND_CORS_ORIGINS='["http://k8s-yttaprod-ui-c90274f218-1861660544.eu-central-1.elb.amazonaws.com"]'
+ENV BACKEND_CORS_ORIGINS='["http://k8s-yttaprod-ui-c90274f218-1861660544.eu-central-1.elb.amazonaws.com", "http://ytta.gdaysam.com"]'
 ENV FIRST_SUPERUSER=
 ENV FIRST_SUPERUSER_PASSWORD=
 ENV POSTGRES_SERVER=
