@@ -12,7 +12,7 @@ COPY ./ /app/
 ARG FRONTEND_ENV=production
 ENV VUE_APP_ENV=${FRONTEND_ENV}
 ENV VUE_APP_NAME=ytta
-ENV VUE_APP_DOMAIN_PROD=k8s-yttaprod-api-4194ecca69-1622719095.eu-central-1.elb.amazonaws.com
+ENV VUE_APP_DOMAIN_PROD=ytta-api.gdaysam.com
 
 RUN ["npm", "run", "build"]
 

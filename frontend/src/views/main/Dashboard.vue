@@ -4,8 +4,9 @@
       Welcome back {{greetedUser}} 👋
     </div>
     <CreateVideoCard />
-    <VideosTableCard />
+    <LabelOccurancesNetworkGraphCard />
     <LabelOccurancesTableCard />
+    <VideosTableCard />
   </v-container>
 </template>
 
@@ -13,6 +14,7 @@
 import { Component, Vue } from 'vue-property-decorator';
 import CreateVideoCard from '@/components/CreateVideoCard.vue';
 import VideosTableCard from '@/components/VideosTableCard.vue';
+import LabelOccurancesNetworkGraphCard from '@/components/LabelOccurancesNetworkGraphCard.vue';
 import LabelOccurancesTableCard from '@/components/LabelOccurancesTableCard.vue';
 import { Store } from 'vuex';
 import { readUserProfile } from '@/store/main/getters';
@@ -21,6 +23,7 @@ import { readUserProfile } from '@/store/main/getters';
   components: {
     CreateVideoCard,
     VideosTableCard,
+    LabelOccurancesNetworkGraphCard,
     LabelOccurancesTableCard,
   },
 })

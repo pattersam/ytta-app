@@ -9,6 +9,6 @@ pydantic[email]
 python-dotenv
 python-jose[cryptography]
 python-multipart
-pytube
+git+https://github.com/kinshuk-h/pytube
 psycopg2
 sqlalchemy

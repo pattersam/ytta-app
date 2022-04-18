@@ -24,6 +24,9 @@ from app.schemas.label_occurance import LabelOccuranceCreate
 logger = logging.getLogger(__name__)
 
 
+MIN_CONFIDENCE = 90.0
+
+
 class RekognitionLabel:
     """Encapsulates an Amazon Rekognition label."""
 
@@ -254,7 +257,7 @@ class RekognitionVideo:
             response = start_job_func(
                 Video=self.video,
                 NotificationChannel=self.get_notification_channel(),
-                MinConfidence=50.0,
+                MinConfidence=MIN_CONFIDENCE,
             )
             job_id = response["JobId"]
             logger.info(

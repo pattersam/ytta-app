@@ -9,6 +9,7 @@ import router from './router';
 import store from '@/store';
 import './registerServiceWorker';
 import 'vuetify/dist/vuetify.min.css';
+import 'vue-d3-network/dist/vue-d3-network.css';
 
 Vue.config.productionTip = false;
 
